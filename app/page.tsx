@@ -217,7 +217,8 @@ export default function Home() {
 
   const getUniqueSubcategories = (products: Product[], category: string) => {
     const filteredProducts = products.filter(product => product.category === category);
-    return [...new Set(filteredProducts.map(product => product.subcategory))];
+    return Array.from(new Set(filteredProducts.map(product => product.subcategory)));
+
   };
 
   const handleCategoryClick = (category: string, section: string) => {
