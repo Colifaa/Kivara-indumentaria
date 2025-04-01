@@ -10,38 +10,22 @@ interface Product {
   id: number;
   name: string;
   price: number;
-  image: string;
-  category: string;
-  subcategory: string;
+  image_url: string;
+  category_id: number;
+  subcategory_id: number; // Cambiado a subcategory_id
 }
 
 interface CartItem {
   id: number;
   product_id: number;
   quantity: number;
-  product: {
-    name: string;
-    price: number;
-    image_url: string;
-  };
+  product: Product;
 }
 
 interface CartProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string | undefined;
-}
-
-interface SupabaseCartItem {
-  quantity: number;
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    image: string;
-    category: string;
-    subcategory: string;
-  };
 }
 
 export function Cart({ isOpen, onClose, userId }: CartProps) {
@@ -52,20 +36,21 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
 
   useEffect(() => {
     if (isOpen && userId) {
-      console.log('Cart abierto, cargando items...');
+      console.log("Cart abierto, cargando items...");
+      console.log("UserId:", userId);
       loadCartItems();
     }
   }, [isOpen, userId]);
 
   useEffect(() => {
-    console.log('Carrito actualizado:', cartItems);
+    console.log("Carrito actualizado:", cartItems);
   }, [cartItems]);
 
   const loadCartItems = async () => {
-    console.log('Cargando items del carrito para usuario:', userId);
-    
+    console.log("Cargando items del carrito para usuario:", userId);
+  
     const { data, error } = await supabase
-      .from('cart_items')
+      .from("cart_items")
       .select(`
         *,
         product:products (
@@ -73,58 +58,63 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
           name,
           price,
           image_url,
-          category,
-          subcategory
+          category_id,
+          subcategory_id
         )
       `)
-      .eq('user_id', userId);
-
-    console.log('Datos recibidos:', data);
-    console.log('Error si existe:', error);
-
+      .eq("user_id", userId);
+  
+    console.log("Datos recibidos:", data);
+    console.log("Error si existe:", error);
+  
     if (error) {
-      console.error('Error al cargar el carrito:', error);
+      console.error("Error al cargar el carrito:", error);
+      setCartItems([]);
       return;
     }
-
-    if (data) {
-      setCartItems(data);
-      calculateTotal(data);
+  
+    if (data && !error) { // Verifica que data no sea null y que no haya error
+      console.log("Datos del carrito:", data);
+      setCartItems(data as CartItem[]);
+      calculateTotal(data as CartItem[]);
     }
   };
-
+  
   const calculateTotal = (items: CartItem[]) => {
     const total = items.reduce((sum, item) => {
-      return sum + (item.product.price * item.quantity);
+      // Redondea el resultado de cada multiplicación y suma
+      return parseFloat((sum + item.product.price * item.quantity).toFixed(2));
     }, 0);
+  
     setTotal(total);
   };
-
   const updateQuantity = async (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
-
+  
     const { error } = await supabase
-      .from('cart_items')
+      .from("cart_items")
       .update({ quantity: newQuantity })
-      .eq('id', itemId);
-
+      .eq("id", itemId);
+  
     if (!error) {
-      const updatedItems = cartItems.map(item =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      );
+      const updatedItems = cartItems.map((item) => {
+        if (item.id === itemId) {
+          // Redondea el precio total del producto actualizado
+          const roundedPrice = parseFloat((item.product.price * newQuantity).toFixed(2));
+          return { ...item, quantity: newQuantity, product: { ...item.product, price: roundedPrice } };
+        }
+        return item;
+      });
       setCartItems(updatedItems);
       calculateTotal(updatedItems);
     }
   };
 
   const removeItem = async (itemId: number) => {
-    const { error } = await supabase
-      .from('cart_items')
-      .delete()
-      .eq('id', itemId);
+    const { error } = await supabase.from("cart_items").delete().eq("id", itemId);
 
     if (!error) {
-      const updatedItems = cartItems.filter(item => item.id !== itemId);
+      const updatedItems = cartItems.filter((item) => item.id !== itemId);
       setCartItems(updatedItems);
       calculateTotal(updatedItems);
     }
@@ -165,9 +155,7 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
                         >
                           -
                         </button>
-                        <span className="px-2 py-1 border rounded">
-                          {item.quantity}
-                        </span>
+                        <span className="px-2 py-1 border rounded">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           className="px-2 py-1 border rounded hover:bg-gray-100"
@@ -178,13 +166,8 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <p className="font-medium">
-                      ${item.product.price * item.quantity}
-                    </p>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="p-2 hover:bg-red-50 rounded-full"
-                    >
+                    <p className="font-medium">${item.product.price * item.quantity}</p>
+                    <button onClick={() => removeItem(item.id)} className="p-2 hover:bg-red-50 rounded-full">
                       <Trash2 className="h-5 w-5 text-red-500" />
                     </button>
                   </div>
@@ -201,7 +184,7 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
                 className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
                 onClick={() => {
                   // Aquí puedes agregar la lógica para proceder al pago
-                  alert('Proceder al pago...');
+                  alert("Proceder al pago...");
                 }}
               >
                 Proceder al Pago
@@ -211,12 +194,7 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
         )}
       </div>
 
-      {showCheckout && (
-        <CheckoutForm
-          onClose={() => setShowCheckout(false)}
-          total={total}
-        />
-      )}
+      {showCheckout && <CheckoutForm onClose={() => setShowCheckout(false)} total={total} />}
     </div>
   );
-} 
+}
