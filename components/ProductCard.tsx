@@ -66,14 +66,14 @@ export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) 
           </button>
         </div>
       </div>
-
       <ProductDetail
-        product={product}
-        isOpen={showDetail}
-        onClose={() => setShowDetail(false)}
-        onAddToCart={handleAddToCart}
-        userId={userId}
-      />
+  product={{ ...product, image: product.image_url }} // Renombra image_url a image solo en esta instancia
+  isOpen={showDetail}
+  onClose={() => setShowDetail(false)}
+  onAddToCart={handleAddToCart}
+  userId={userId}
+/>
+
     </div>
   );
 } 
