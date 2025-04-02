@@ -47,15 +47,27 @@ export default function Home() {
   const carouselImages = [
     {
       url: "/carousel/imagen1.png",
-      alt: "Nuevas colecciones de moda"
+      alt: "Nuevas colecciones de moda",
+      title: "Nueva Colección Primavera 2024",
+      subtitle: "Descubre las últimas tendencias en moda con nuestra nueva colección exclusiva",
+      buttonText: "Comprar Ahora",
+      buttonLink: "#dama"
     },
     {
       url: "/carousel/imagen2.png",
-      alt: "Ofertas especiales"
+      alt: "Ofertas especiales",
+      title: "Ofertas Especiales",
+      subtitle: "Hasta 50% de descuento en selección de prendas",
+      buttonText: "Ver Ofertas",
+      buttonLink: "#ofertas"
     },
     {
       url: "/carousel/imagen3.png",
-      alt: "Tendencias de temporada"
+      alt: "Tendencias de temporada",
+      title: "Tendencias de Temporada",
+      subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
+      buttonText: "Explorar",
+      buttonLink: "#tendencias"
     }
   ];
 

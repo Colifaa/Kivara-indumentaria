@@ -1,40 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
+import { Navigation } from "@/components/Navigation";
 import { AdminDashboard } from "@/components/AdminDashboard";
 
 export default function AdminPage() {
-  const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const supabase = createClientComponentClient();
+  const [isLoading, setIsLoading] = useState(true);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [activeSection, setActiveSection] = useState("dama");
   const router = useRouter();
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
     checkAdminStatus();
+    loadCartItems();
   }, []);
 
   const checkAdminStatus = async () => {
     try {
-      // Verificar si el usuario está autenticado
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (authError || !user) {
+      if (!user) {
         router.push('/login');
         return;
       }
 
-      // Verificar si el usuario es admin
-      const { data: adminData, error: adminError } = await supabase
+      const { data: adminData } = await supabase
         .from('admin_users')
-        .select('id')
-        .eq('id', user.id)
+        .select('*')
+        .eq('email', user.email)
         .single();
 
-      if (adminError || !adminData) {
-        console.log('Usuario no es administrador');
-        router.push('/'); // Redirigir a la página principal si no es admin
+      if (!adminData) {
+        router.push('/');
         return;
       }
 
@@ -47,6 +48,33 @@ export default function AdminPage() {
     }
   };
 
+  const loadCartItems = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: cartItems } = await supabase
+        .from('cart_items')
+        .select('quantity')
+        .eq('user_id', user.id);
+
+      const totalItems = cartItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+      setCartItemCount(totalItems);
+    } catch (error) {
+      console.error('Error al cargar items del carrito:', error);
+    }
+  };
+
+  const handleSearch = (query: string) => {
+    // Implementar búsqueda si es necesario
+    console.log('Búsqueda:', query);
+  };
+
+  const handleCartClick = () => {
+    // Implementar apertura del carrito
+    console.log('Abrir carrito');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -56,8 +84,25 @@ export default function AdminPage() {
   }
 
   if (!isAdmin) {
-    return null; // No mostrar nada mientras se redirige
+    return null;
   }
 
-  return <AdminDashboard />;
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navigation
+        onSectionChange={setActiveSection}
+        activeSection={activeSection}
+        onSearch={handleSearch}
+        onCartClick={handleCartClick}
+        cartItemCount={cartItemCount}
+      />
+      <div className="pt-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-6">
+          <div className="px-4 py-6 sm:px-0">
+            <AdminDashboard />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 } 

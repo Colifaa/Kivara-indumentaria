@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { ShoppingCart, Heart, LogIn } from "lucide-react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
+import { ShoppingCart, Menu, X, ChevronDown, LogOut, LayoutDashboard, LogIn } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { SearchBar } from "./SearchBar";
 
 interface NavigationProps {
@@ -22,7 +24,48 @@ export function Navigation({
   cartItemCount
 }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  // En la función checkUser, añade logs para depuración
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setUserId(user.id);
+      setUserEmail(user.email || null);
+      const avatarUrl = user.user_metadata?.avatar_url;
+      setUserAvatar(typeof avatarUrl === 'string' ? avatarUrl : null);
+      
+      // Enfoque alternativo: usar la función RPC en lugar de consultar directamente
+      const { data, error } = await supabase.rpc('is_admin', { 
+        email_param: user.email 
+      });
+      
+      if (error) {
+        console.error("Error al verificar admin:", error);
+      } else {
+        setIsAdmin(!!data);
+      }
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUserId(null);
+    setUserEmail(null);
+    setUserAvatar(null);
+    setIsAdmin(false);
+    router.push('/');
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
@@ -84,12 +127,62 @@ export function Navigation({
 
           {/* Carrito y Login */}
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => router.push("/login")}
-              className="p-2 hover:bg-gray-100 rounded-full"
-            >
-              <LogIn className="h-6 w-6" />
-            </button>
+            {userId ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-2 focus:outline-none"
+                >
+                  {userAvatar ? (
+                    <Image
+                      src={userAvatar}
+                      alt="Avatar"
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-600 text-sm">
+                        {userEmail?.[0].toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <ChevronDown className="h-4 w-4 text-gray-600" />
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          router.push('/admin');
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      >
+                        <LayoutDashboard className="h-4 w-4 mr-2" />
+                        Panel de Admin
+                      </button>
+                    )}
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => router.push("/login")}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
+                <LogIn className="h-6 w-6" />
+              </button>
+            )}
             <button
               onClick={onCartClick}
               className="p-2 hover:bg-gray-100 rounded-full relative"
@@ -182,15 +275,40 @@ export function Navigation({
               >
                 Accesorios
               </button>
-              <button
-                onClick={() => {
-                  router.push("/login");
-                  setIsMenuOpen(false);
-                }}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-              >
-                Iniciar Sesión
-              </button>
+              {userId ? (
+                <>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        router.push("/admin");
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                    >
+                      Panel de Admin
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    router.push("/login");
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                >
+                  Iniciar Sesión
+                </button>
+              )}
             </div>
           </div>
         )}
