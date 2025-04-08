@@ -2,19 +2,40 @@ import { X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface Subcategory {
+  id: number;
+  name: string;
+  slug: string;
+  category_id: number;
+}
+
+interface SubSubcategory {
+  id: number;
+  name: string;
+  slug: string;
+  subcategory_id: number;
+}
+
 interface Product {
   id: number;
   name: string;
+  description: string;
   price: number;
-  image: string;
-  category: string;
-  subcategory: string;
-  description?: string;
-  stock?: number;
-  sizes?: string[];
-  colors?: string[];
-  material?: string;
-  care_instructions?: string;
+  image_url: string;
+  category_id: number;
+  subcategory_id: number;
+  sub_subcategory_id: number;
+  stock: number;
+  talla: string;
+  category: Category;
+  subcategory: Subcategory;
+  sub_subcategory: SubSubcategory;
 }
 
 interface ProductDetailProps {
@@ -34,7 +55,12 @@ export function ProductDetail({
 }: ProductDetailProps) {
   const router = useRouter();
 
-  if (!isOpen) return null;
+  const formatPrice = (price: number | null) => {
+    if (price === null || price === undefined) {
+      return "Precio no disponible";
+    }
+    return `$${price.toFixed(2)}`;
+  };
 
   const handleAddToCart = () => {
     if (!userId) {
@@ -42,7 +68,10 @@ export function ProductDetail({
       return;
     }
     onAddToCart(product);
+    onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -52,32 +81,32 @@ export function ProductDetail({
             <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-400 hover:text-gray-500"
             >
               <X className="h-6 w-6" />
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Imagen del producto */}
             <div className="relative aspect-square">
               <Image
-                src={product.image}
+                src={product.image_url || '/placeholder-image.jpg'}
                 alt={product.name}
                 fill
                 className="object-cover rounded-lg"
               />
             </div>
 
-            {/* Información del producto */}
             <div className="space-y-4">
               <div>
                 <h3 className="text-xl font-semibold text-gray-900">
-                  ${product.price.toFixed(2)}
+                  {formatPrice(product.price)}
                 </h3>
-                <p className="text-sm text-gray-500">
-                  {product.category} - {product.subcategory}
-                </p>
+                <div className="text-sm text-gray-500">
+                  <p>{product.category?.name}</p>
+                  {product.subcategory && <p>{product.subcategory.name}</p>}
+                  {product.sub_subcategory && <p>{product.sub_subcategory.name}</p>}
+                </div>
               </div>
 
               {product.description && (
@@ -87,56 +116,17 @@ export function ProductDetail({
                 </div>
               )}
 
-              {product.stock !== undefined && (
+              {product.stock !== undefined && product.stock !== null && (
                 <div>
                   <h4 className="font-medium text-gray-900">Stock disponible</h4>
                   <p className="text-gray-600">{product.stock} unidades</p>
                 </div>
               )}
 
-              {product.sizes && product.sizes.length > 0 && (
+              {product.talla && (
                 <div>
-                  <h4 className="font-medium text-gray-900">Tallas disponibles</h4>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {product.sizes.map((size) => (
-                      <span
-                        key={size}
-                        className="px-3 py-1 bg-gray-100 rounded-full text-sm"
-                      >
-                        {size}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {product.colors && product.colors.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-900">Colores disponibles</h4>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {product.colors.map((color) => (
-                      <span
-                        key={color}
-                        className="px-3 py-1 bg-gray-100 rounded-full text-sm"
-                      >
-                        {color}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {product.material && (
-                <div>
-                  <h4 className="font-medium text-gray-900">Material</h4>
-                  <p className="text-gray-600">{product.material}</p>
-                </div>
-              )}
-
-              {product.care_instructions && (
-                <div>
-                  <h4 className="font-medium text-gray-900">Instrucciones de cuidado</h4>
-                  <p className="text-gray-600">{product.care_instructions}</p>
+                  <h4 className="font-medium text-gray-900">Talla</h4>
+                  <p className="text-gray-600">{product.talla}</p>
                 </div>
               )}
 
