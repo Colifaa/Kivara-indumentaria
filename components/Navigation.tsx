@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Menu, X, ChevronDown, LogOut, LayoutDashboard, LogIn } from "lucide-react";
+import { ShoppingCart, Menu, X, ChevronDown, LogOut, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { SearchBar } from "./SearchBar";
+import { Button } from "@/components/ui/button";
 
 interface NavigationProps {
   onSectionChange: (section: string) => void;
@@ -76,11 +76,6 @@ export function Navigation({
             Inndumentaria
           </Link>
 
-          {/* Barra de búsqueda */}
-          <div className="flex-1 max-w-xl mx-4">
-            <SearchBar onSearch={onSearch} />
-          </div>
-
           {/* Enlaces de navegación */}
           <div className="hidden md:flex space-x-8">
             <button
@@ -127,7 +122,15 @@ export function Navigation({
 
           {/* Carrito y Login */}
           <div className="flex items-center space-x-4">
-            {userId ? (
+            {!userId ? (
+              <Button
+                variant="outline"
+                className="ml-4"
+                onClick={() => router.push('/login')}
+              >
+                Iniciar Sesión
+              </Button>
+            ) : (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -136,19 +139,19 @@ export function Navigation({
                   {userAvatar ? (
                     <Image
                       src={userAvatar}
-                      alt="Avatar"
+                      alt="User avatar"
                       width={32}
                       height={32}
                       className="rounded-full"
                     />
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
                       <span className="text-gray-600 text-sm">
-                        {userEmail?.[0].toUpperCase()}
+                        {userEmail?.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
-                  <ChevronDown className="h-4 w-4 text-gray-600" />
+                  <ChevronDown className="h-4 w-4" />
                 </button>
 
                 {isUserMenuOpen && (
@@ -175,13 +178,6 @@ export function Navigation({
                   </div>
                 )}
               </div>
-            ) : (
-              <button
-                onClick={() => router.push("/login")}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <LogIn className="h-6 w-6" />
-              </button>
             )}
             <button
               onClick={onCartClick}

@@ -26,9 +26,10 @@ interface CartProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string | undefined;
+  onUpdateCartCount?: (count: number) => void;
 }
 
-export function Cart({ isOpen, onClose, userId }: CartProps) {
+export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
   const [total, setTotal] = useState(0);
@@ -70,13 +71,17 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
     if (error) {
       console.error("Error al cargar el carrito:", error);
       setCartItems([]);
+      onUpdateCartCount?.(0);
       return;
     }
   
-    if (data && !error) { // Verifica que data no sea null y que no haya error
+    if (data && !error) {
       console.log("Datos del carrito:", data);
-      setCartItems(data as CartItem[]);
-      calculateTotal(data as CartItem[]);
+      const items = data as CartItem[];
+      setCartItems(items);
+      calculateTotal(items);
+      const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+      onUpdateCartCount?.(totalItems);
     }
   };
   
@@ -99,7 +104,6 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
     if (!error) {
       const updatedItems = cartItems.map((item) => {
         if (item.id === itemId) {
-          // Redondea el precio total del producto actualizado
           const roundedPrice = parseFloat((item.product.price * newQuantity).toFixed(2));
           return { ...item, quantity: newQuantity, product: { ...item.product, price: roundedPrice } };
         }
@@ -107,6 +111,8 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
       });
       setCartItems(updatedItems);
       calculateTotal(updatedItems);
+      const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+      onUpdateCartCount?.(totalItems);
     }
   };
 
@@ -117,6 +123,8 @@ export function Cart({ isOpen, onClose, userId }: CartProps) {
       const updatedItems = cartItems.filter((item) => item.id !== itemId);
       setCartItems(updatedItems);
       calculateTotal(updatedItems);
+      const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+      onUpdateCartCount?.(totalItems);
     }
   };
 

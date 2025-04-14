@@ -8,6 +8,15 @@ import { useState } from "react";
 import { ProductDetail } from "./ProductDetail";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Category {
   id: number;
@@ -34,7 +43,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  image_url: string;
+  image_url: string | string[];
   category_id: number;
   subcategory_id: number;
   sub_subcategory_id: number;
@@ -53,6 +62,39 @@ interface ProductCardProps {
 
 export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
+  const router = useRouter();
+
+  const getImages = () => {
+    if (typeof product.image_url === 'string') {
+      try {
+        // Limpiar el string de corchetes y espacios
+        const cleanString = product.image_url.replace(/[\[\]]/g, '');
+        // Dividir por comas y limpiar cada URL
+        const urls = cleanString.split(',').map(url => url.trim());
+        return urls;
+      } catch (e) {
+        // Si hay algún error, retornar el string original como único elemento
+        return [product.image_url];
+      }
+    }
+    return product.image_url;
+  };
+
+  const images = getImages();
+
+  const handleAddToCart = () => {
+    if (userId) {
+      onAddToCart(product);
+    } else {
+      setShowLoginAlert(true);
+    }
+  };
+
+  const handleLoginRedirect = () => {
+    setShowLoginAlert(false);
+    router.push('/login');
+  };
 
   // Función para formatear el precio
   const formatPrice = (price: number | null) => {
@@ -67,7 +109,7 @@ export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) 
       <Card className="overflow-hidden">
         <div className="relative aspect-square cursor-pointer" onClick={() => setIsDetailOpen(true)}>
           <Image
-            src={product.image_url || '/placeholder-image.jpg'}
+            src={images[0] || '/placeholder-image.jpg'}
             alt={product.name}
             fill
             className="object-cover"
@@ -82,8 +124,8 @@ export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) 
           </div>
           <div className="mt-3 flex items-center justify-between">
             <span className="text-xl font-bold">{formatPrice(product.price)}</span>
-            <Button onClick={() => onAddToCart(product)}>
-              {userId ? "Agregar al carrito" : "Iniciar sesión"}
+            <Button onClick={handleAddToCart}>
+              Agregar al carrito
             </Button>
           </div>
         </div>
@@ -96,6 +138,22 @@ export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) 
         onAddToCart={onAddToCart}
         userId={userId}
       />
+
+      <AlertDialog open={showLoginAlert} onOpenChange={setShowLoginAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Iniciar sesión requerido</AlertDialogTitle>
+            <AlertDialogDescription>
+              Para agregar productos al carrito debes iniciar sesión
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleLoginRedirect}>
+              Ir a login
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 } 

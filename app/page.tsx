@@ -9,42 +9,7 @@ import { Cart } from "@/components/Cart";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Carousel } from "@/components/Carousel";
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-interface Subcategory {
-  id: number;
-  name: string;
-  slug: string;
-  category_id: number;
-}
-
-interface SubSubcategory {
-  id: number;
-  name: string;
-  slug: string;
-  subcategory_id: number;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string;
-  category_id: number;
-  subcategory_id: number;
-  sub_subcategory_id: number;
-  stock: number;
-  talla: string;
-  category: Category;
-  subcategory: Subcategory;
-  sub_subcategory: SubSubcategory;
-}
+import { Product, Category, Subcategory, SubSubcategory } from '@/types/product';
 
 interface FilterState {
   category: string | null;
@@ -899,7 +864,14 @@ export default function Home() {
         </div>
       </div>
 
-      <Cart isOpen={showCart} onClose={() => setShowCart(false)} userId={userId} />
+      {showCart && (
+        <Cart
+          isOpen={showCart}
+          onClose={() => setShowCart(false)}
+          userId={userId}
+          onUpdateCartCount={setCartItemCount}
+        />
+      )}
     </div>
   );
 }
