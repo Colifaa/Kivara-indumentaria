@@ -10,13 +10,16 @@ interface Product {
   id: number;
   name: string;
   price: number;
-  image_url: string;
+  image_url: string[];
   category_id: number;
   subcategory_id: number;
+  sub_subcategory_id: number | null;
   description: string;
   stock: number;
   category?: string;
   subcategory?: string;
+  sub_subcategory?: string;
+  created_at: string;
 }
 
 interface Category {
@@ -32,6 +35,8 @@ interface Subcategory {
 
 export function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,47 +53,56 @@ export function AdminDashboard() {
     loadData();
   }, [currentPage]);
 
+  useEffect(() => {
+    // Filtrar productos cuando cambia el término de búsqueda
+    if (searchTerm.trim() === "") {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [searchTerm, products]);
+
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Cargar categorías
-      const { data: categoriesData } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-      if (categoriesData) setCategories(categoriesData);
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          categories(name),
+          subcategories(name),
+          sub_subcategories(name)
+        `)
+        .order("created_at", { ascending: false });
 
-      // Cargar subcategorías
-      const { data: subcategoriesData } = await supabase
-        .from('subcategories')
-        .select('*')
-        .order('name');
-      if (subcategoriesData) setSubcategories(subcategoriesData);
+      if (error) throw error;
 
-      // Cargar productos con paginación
-      const from = (currentPage - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
-
-      const { data: productsData, count } = await supabase
-        .from('products')
-        .select('*, categories(name), subcategories(name)', { count: 'exact' })
-        .range(from, to)
-        .order('id', { ascending: true });
-
-      if (productsData && count) {
-        const formattedProducts = productsData.map(product => ({
+      if (data) {
+        const formattedProducts = data.map((product: any) => ({
           ...product,
           category: product.categories?.name,
-          subcategory: product.subcategories?.name
+          subcategory: product.subcategories?.name,
+          sub_subcategory: product.sub_subcategories?.name
         }));
         setProducts(formattedProducts);
-        setTotalPages(Math.ceil(count / itemsPerPage));
+        setFilteredProducts(formattedProducts);
+        setTotalPages(Math.ceil(formattedProducts.length / itemsPerPage));
       }
     } catch (error) {
-      console.error('Error al cargar datos:', error);
+      console.error("Error al cargar productos:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Función para obtener los productos de la página actual
+  const getCurrentPageProducts = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredProducts.slice(startIndex, endIndex);
   };
 
   const handleDelete = async (id: number) => {
@@ -123,17 +137,33 @@ export function AdminDashboard() {
     <div className="bg-white rounded-lg shadow">
       <div className="px-4 py-5 sm:px-6 flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
-        <button
-          onClick={() => {
-            setEditingProduct(null);
-            setSelectedCategoryId(null);
-            setIsEditing(true);
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Nuevo Producto
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setEditingProduct(null);
+              setSelectedCategoryId(null);
+              setIsEditing(true);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Nuevo Producto
+          </button>
+        </div>
       </div>
 
       {isEditing && (
@@ -181,12 +211,12 @@ export function AdminDashboard() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
+            {getCurrentPageProducts().map((product) => (
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="h-12 w-12 relative rounded overflow-hidden">
                     <Image
-                      src={product.image_url}
+                      src={product.image_url[0]}
                       alt={product.name}
                       fill
                       className="object-cover"
@@ -203,7 +233,9 @@ export function AdminDashboard() {
                   <div className="text-sm text-gray-500">{product.subcategory}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                  <div className="text-sm text-gray-900">
+                    ${product.price ? product.price.toFixed(2) : '0.00'}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                   <div className="text-sm text-gray-500">{product.stock}</div>
@@ -257,9 +289,9 @@ export function AdminDashboard() {
             <p className="text-sm text-gray-700">
               Mostrando <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> a{" "}
               <span className="font-medium">
-                {Math.min(currentPage * itemsPerPage, products.length)}
+                {Math.min(currentPage * itemsPerPage, filteredProducts.length)}
               </span>{" "}
-              de <span className="font-medium">{totalPages * itemsPerPage}</span> resultados
+              de <span className="font-medium">{filteredProducts.length}</span> resultados
             </p>
           </div>
           <div>
@@ -272,7 +304,7 @@ export function AdminDashboard() {
                 <ChevronLeft className="h-5 w-5" />
               </button>
               {/* Números de página */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              {Array.from({ length: Math.ceil(filteredProducts.length / itemsPerPage) }, (_, i) => i + 1).map((page) => (
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
@@ -286,8 +318,8 @@ export function AdminDashboard() {
                 </button>
               ))}
               <button
-                onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
-                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(page => Math.min(Math.ceil(filteredProducts.length / itemsPerPage), page + 1))}
+                disabled={currentPage === Math.ceil(filteredProducts.length / itemsPerPage)}
                 className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
               >
                 <ChevronRight className="h-5 w-5" />
