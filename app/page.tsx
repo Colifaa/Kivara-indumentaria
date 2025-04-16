@@ -6,10 +6,12 @@ import { Navigation } from "@/components/Navigation";
 import { SearchBar } from "@/components/SearchBar";
 import { ProductCard } from "@/components/ProductCard";
 import { Cart } from "@/components/Cart";
-import { ShoppingCart, Heart } from "lucide-react";
+import { ShoppingCart, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Carousel } from "@/components/Carousel";
 import { Product, Category, Subcategory, SubSubcategory } from '@/types/product';
+import { motion, AnimatePresence } from "framer-motion";
+import { ProductDetail } from "@/components/ProductDetail";
 
 interface FilterState {
   category: string | null;
@@ -52,6 +54,9 @@ export default function Home() {
   const [userId, setUserId] = useState<string | undefined>();
   const supabase = createClientComponentClient();
   const router = useRouter();
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailProductIndex, setDetailProductIndex] = useState<number | null>(null);
+  const [detailProductList, setDetailProductList] = useState<Product[]>([]);
 
   const carouselImages = [
     {
@@ -161,7 +166,7 @@ export default function Home() {
         return;
       }
 
-      // Finalmente cargar los productos con todas sus relaciones
+      // Finalmente cargar los productos con todas sus relaciones, ordenados alfabéticamente
       const { data: productsData, error: productsError } = await supabase
         .from("products")
         .select(`
@@ -170,7 +175,7 @@ export default function Home() {
           subcategory:subcategories(*),
           sub_subcategory:sub_subcategories(*)
         `)
-        .order('id', { ascending: true });
+        .order('name', { ascending: true });
 
       if (productsError) {
         console.error('Error al cargar productos:', productsError);
@@ -283,40 +288,85 @@ export default function Home() {
     }));
   };
 
-  // Componente de paginación
+  // Componente de paginación moderno
   const Pagination = ({ section, totalPages }: { section: string, totalPages: number }) => {
     const currentPageNumber = currentPage[section];
-    
+    // Mostrar máximo 5 páginas a la vez
+    const getPageNumbers = () => {
+      const pages = [];
+      let start = Math.max(1, currentPageNumber - 2);
+      let end = Math.min(totalPages, currentPageNumber + 2);
+      if (currentPageNumber <= 3) {
+        end = Math.min(5, totalPages);
+      }
+      if (currentPageNumber > totalPages - 3) {
+        start = Math.max(1, totalPages - 4);
+      }
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      return pages;
+    };
+    const pageNumbers = getPageNumbers();
     return (
-      <div className="flex justify-center items-center space-x-2 mt-6">
-        <button
+      <motion.nav
+        className="flex justify-center items-center gap-2 mt-8 select-none"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        aria-label="Paginación"
+      >
+        {/* Botón Anterior */}
+        <motion.button
+          whileTap={{ scale: 0.92 }}
           onClick={() => handlePageChange(section, currentPageNumber - 1)}
           disabled={currentPageNumber === 1}
-          className={`px-3 py-1 rounded ${
-            currentPageNumber === 1
-              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
+          className={`w-9 h-9 flex items-center justify-center rounded-full border transition-colors duration-200
+            ${currentPageNumber === 1
+              ? "bg-gris-suave text-gris-400 border-gris-suave cursor-not-allowed"
+              : "bg-blanco text-negro border-rosa-oscuro hover:bg-rosa-claro hover:text-rosa-oscuro"}
+          `}
+          aria-label="Anterior"
         >
-          Anterior
-        </button>
-        
-        <span className="text-gray-600">
-          Página {currentPageNumber} de {totalPages}
-        </span>
-        
-        <button
+          <ChevronLeft className="w-5 h-5" />
+        </motion.button>
+        {/* Números de página */}
+        <AnimatePresence initial={false}>
+          {pageNumbers.map((page) => (
+            <motion.button
+              key={page}
+              whileTap={{ scale: 0.92 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => handlePageChange(section, page)}
+              className={`w-9 h-9 mx-1 flex items-center justify-center rounded-full border font-semibold text-sm transition-colors duration-200
+                ${page === currentPageNumber
+                  ? "bg-rosa-oscuro text-blanco border-rosa-oscuro shadow"
+                  : "bg-blanco text-negro border-rosa-oscuro hover:bg-rosa-claro hover:text-rosa-oscuro"}
+              `}
+              aria-current={page === currentPageNumber ? "page" : undefined}
+            >
+              {page}
+            </motion.button>
+          ))}
+        </AnimatePresence>
+        {/* Botón Siguiente */}
+        <motion.button
+          whileTap={{ scale: 0.92 }}
           onClick={() => handlePageChange(section, currentPageNumber + 1)}
           disabled={currentPageNumber === totalPages}
-          className={`px-3 py-1 rounded ${
-            currentPageNumber === totalPages
-              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
+          className={`w-9 h-9 flex items-center justify-center rounded-full border transition-colors duration-200
+            ${currentPageNumber === totalPages
+              ? "bg-gris-suave text-gris-400 border-gris-suave cursor-not-allowed"
+              : "bg-blanco text-negro border-rosa-oscuro hover:bg-rosa-claro hover:text-rosa-oscuro"}
+          `}
+          aria-label="Siguiente"
         >
-          Siguiente
-        </button>
-      </div>
+          <ChevronRight className="w-5 h-5" />
+        </motion.button>
+      </motion.nav>
     );
   };
 
@@ -717,6 +767,30 @@ export default function Home() {
     }));
   };
 
+  // Función para abrir el modal de detalle
+  const openProductDetail = (product: Product, idx: number, list: Product[]) => {
+    setDetailProductList(list);
+    setDetailProductIndex(idx);
+    setDetailModalOpen(true);
+  };
+
+  // Funciones para navegar entre productos
+  const handleNextProduct = () => {
+    if (detailProductIndex !== null && detailProductIndex < detailProductList.length - 1) {
+      setDetailProductIndex(detailProductIndex + 1);
+    }
+  };
+  const handlePrevProduct = () => {
+    if (detailProductIndex !== null && detailProductIndex > 0) {
+      setDetailProductIndex(detailProductIndex - 1);
+    }
+  };
+  const handleCloseDetail = () => {
+    setDetailModalOpen(false);
+    setDetailProductIndex(null);
+    setDetailProductList([]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation
@@ -739,14 +813,14 @@ export default function Home() {
             const { products: paginatedProducts, totalPages } = getPaginatedProducts(section);
             
             return (
-              <section key={section} id={section} className="mb-16">
-                <h2 className="text-2xl font-bold mb-6 capitalize">{section}</h2>
+              <section  key={section} id={section} className="relative mb-16">
+                <h2 className="relative text-2xl font-bold mb-6 capitalize">{section}</h2>
                 
                 {/* Botón para mostrar/ocultar el panel de filtros */}
                 <div className="mb-4">
                   <button
                     onClick={() => toggleFilterPanel(section)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    className=" px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors relative"
                   >
                     {showFilterPanel[section] ? "Ocultar Filtros" : "Mostrar Filtros"}
                   </button>
@@ -776,7 +850,7 @@ export default function Home() {
                 
                 {/* Panel de filtros */}
                 {showFilterPanel[section] && (
-                  <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
+                  <div className=" relative mb-6 p-4 bg-white rounded-lg shadow-md">
                     <h3 className="text-lg font-semibold mb-3">Filtros</h3>
                     
                     {/* Subcategorías */}
@@ -843,13 +917,14 @@ export default function Home() {
                 )}
 
                 {/* Grid de productos */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {paginatedProducts.map((product) => (
+                <div className="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {paginatedProducts.map((product, idx) => (
                     <ProductCard
                       key={product.id}
                       product={product}
                       userId={userId}
                       onAddToCart={addToCart}
+                      onDetail={() => openProductDetail(product, idx, paginatedProducts)}
                     />
                   ))}
                 </div>
@@ -872,6 +947,31 @@ export default function Home() {
           onUpdateCartCount={setCartItemCount}
         />
       )}
+
+      <AnimatePresence>
+        {detailModalOpen && detailProductIndex !== null && detailProductList.length > 0 && (
+          <motion.div
+            key={detailProductList[detailProductIndex].id}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+          >
+            <ProductDetail
+              product={detailProductList[detailProductIndex]}
+              isOpen={detailModalOpen}
+              onClose={handleCloseDetail}
+              onAddToCart={addToCart}
+              userId={userId}
+              onNext={handleNextProduct}
+              onPrev={handlePrevProduct}
+              hasNext={detailProductIndex < detailProductList.length - 1}
+              hasPrev={detailProductIndex > 0}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

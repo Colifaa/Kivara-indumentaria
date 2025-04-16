@@ -58,10 +58,10 @@ interface ProductCardProps {
   product: Product;
   userId?: string;
   onAddToCart: (product: Product) => void;
+  onDetail?: () => void;
 }
 
-export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) {
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+export function ProductCard({ product, userId, onAddToCart, onDetail }: ProductCardProps) {
   const [showLoginAlert, setShowLoginAlert] = useState(false);
   const router = useRouter();
 
@@ -69,7 +69,7 @@ export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) 
     if (typeof product.image_url === 'string') {
       try {
         // Limpiar el string de corchetes y espacios
-        const cleanString = product.image_url.replace(/[\[\]]/g, '');
+        const cleanString = product.image_url.replace(/\[|\]/g, '');
         // Dividir por comas y limpiar cada URL
         const urls = cleanString.split(',').map(url => url.trim());
         return urls;
@@ -101,13 +101,13 @@ export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) 
     if (price === null || price === undefined) {
       return "Precio no disponible";
     }
-    return `$${price.toFixed(2)}`;
+    return `$${price.toLocaleString("es-AR")}`;
   };
 
   return (
     <>
-      <Card className="overflow-hidden">
-        <div className="relative aspect-square cursor-pointer" onClick={() => setIsDetailOpen(true)}>
+      <Card className="overflow-hidden border border-gris-suave">
+        <div className="relative aspect-square cursor-pointer" onClick={onDetail}>
           <Image
             src={images[0] || '/placeholder-image.jpg'}
             alt={product.name}
@@ -115,40 +115,38 @@ export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) 
             className="object-cover"
           />
         </div>
-        <div className="p-4">
-          <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-          <div className="mt-1 text-sm text-gray-500">
+        <div className="p-4 bg-blanco">
+          <h3 className="text-lg font-semibold text-negro">{product.name}</h3>
+          <div className="mt-1 text-sm text-negro/70">
             <p>{product.category?.name}</p>
             {product.subcategory && <p>{product.subcategory.name}</p>}
             {product.sub_subcategory && <p>{product.sub_subcategory.name}</p>}
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-xl font-bold">{formatPrice(product.price)}</span>
-            <Button onClick={handleAddToCart}>
+            <span className="text-xl font-bold text-negro">{formatPrice(product.price)}</span>
+            <Button 
+              onClick={handleAddToCart} 
+              className="bg-rosa-oscuro hover:bg-rosa-oscuro/90 text-blanco"
+            >
               Agregar al carrito
             </Button>
           </div>
         </div>
       </Card>
 
-      <ProductDetail
-        product={product}
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-        onAddToCart={onAddToCart}
-        userId={userId}
-      />
-
       <AlertDialog open={showLoginAlert} onOpenChange={setShowLoginAlert}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-blanco border border-gris-suave">
           <AlertDialogHeader>
-            <AlertDialogTitle>Iniciar sesión requerido</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-negro">Iniciar sesión requerido</AlertDialogTitle>
+            <AlertDialogDescription className="text-negro/70">
               Para agregar productos al carrito debes iniciar sesión
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={handleLoginRedirect}>
+            <AlertDialogAction 
+              onClick={handleLoginRedirect}
+              className="bg-rosa-oscuro hover:bg-rosa-oscuro/90 text-blanco"
+            >
               Ir a login
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -156,4 +154,4 @@ export function ProductCard({ product, userId, onAddToCart }: ProductCardProps) 
       </AlertDialog>
     </>
   );
-} 
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { X, Plus } from "lucide-react";
 
@@ -69,6 +69,16 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
 
   const [selectedSubSubcategoryId, setSelectedSubSubcategoryId] = useState<number | null>(null);
   const [isSubSubcategoryModalOpen, setIsSubSubcategoryModalOpen] = useState(false);
+
+  const [priceInput, setPriceInput] = useState(product?.price ? product.price.toString() : "");
+
+  // Formatear el precio como ARS
+  const formattedPrice = useMemo(() => {
+    if (!priceInput) return "";
+    const value = parseInt(priceInput, 10);
+    if (isNaN(value)) return "";
+    return value.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
+  }, [priceInput]);
 
   useEffect(() => {
     loadCategories();
@@ -264,7 +274,7 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
       const productData = {
         name: formData.get("name") as string,
         description: formData.get("description") as string,
-        price: parseFloat(formData.get("price") as string),
+        price: parseInt(priceInput, 10),
         image_url: finalImageUrls.map(url => url.trim()), // Asegurarnos de que no haya espacios
         category_id: parseInt(formData.get("category_id") as string),
         subcategory_id: subcategoryId,
@@ -528,12 +538,18 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
                 <input
                   type="number"
                   name="price"
-                  step="0.01"
+                  step="1"
                   min="0"
-                  defaultValue={product?.price}
+                  value={priceInput}
+                  onChange={e => setPriceInput(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
+                {priceInput && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    {formattedPrice}
+                  </div>
+                )}
               </div>
 
               <div>

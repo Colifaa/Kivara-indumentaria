@@ -21,6 +21,11 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --color-rosa-claro: #FAD4D8;
+  --color-negro: #000000;
+  --color-rosa-oscuro: #BB6A8C;
+  --color-blanco: #FFFFFF;
+  --color-gris-suave: #F3F3F3;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -92,6 +97,34 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#FAD4D8] text-[#000000];
+  }
+
+  .bg-rosa-claro {
+    background-color: var(--color-rosa-claro);
+  }
+
+  .bg-rosa-oscuro {
+    background-color: var(--color-rosa-oscuro);
+  }
+
+  .bg-gris-suave {
+    background-color: var(--color-gris-suave);
+  }
+
+  .text-rosa-oscuro {
+    color: var(--color-rosa-oscuro);
+  }
+
+  .border-rosa-oscuro {
+    border-color: var(--color-rosa-oscuro);
+  }
+
+  .hover\:bg-rosa-oscuro:hover {
+    background-color: var(--color-rosa-oscuro);
+  }
+
+  .hover\:text-rosa-oscuro:hover {
+    color: var(--color-rosa-oscuro);
   }
 }

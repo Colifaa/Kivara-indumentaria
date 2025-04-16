@@ -65,7 +65,7 @@ export function Carousel({ images, autoPlayInterval = 5000 }: CarouselProps) {
           </p>
           <button
             onClick={() => router.push(images[currentIndex].buttonLink)}
-            className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors animate-fade-in"
+            className="bg-[#BB6A8C] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#a25a7a] transition-colors animate-fade-in"
           >
             {images[currentIndex].buttonText}
           </button>
@@ -75,13 +75,13 @@ export function Carousel({ images, autoPlayInterval = 5000 }: CarouselProps) {
       {/* Botones de navegación */}
       <button
         onClick={goToPrevious}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white transition-colors"
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-[#FAD4D8] text-black p-2 rounded-full hover:bg-[#BB6A8C] hover:text-white transition-colors"
       >
         <ChevronLeft className="h-6 w-6" />
       </button>
       <button
         onClick={goToNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white transition-colors"
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#FAD4D8] text-black p-2 rounded-full hover:bg-[#BB6A8C] hover:text-white transition-colors"
       >
         <ChevronRight className="h-6 w-6" />
       </button>
@@ -93,7 +93,7 @@ export function Carousel({ images, autoPlayInterval = 5000 }: CarouselProps) {
             key={index}
             onClick={() => setCurrentIndex(index)}
             className={`w-3 h-3 rounded-full transition-colors ${
-              index === currentIndex ? "bg-white" : "bg-white/50"
+              index === currentIndex ? "bg-[#BB6A8C]" : "bg-[#FAD4D8]"
             }`}
           />
         ))}
@@ -118,4 +118,4 @@ export function Carousel({ images, autoPlayInterval = 5000 }: CarouselProps) {
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
-*/ 
+*/
