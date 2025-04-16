@@ -104,8 +104,7 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
     if (!error) {
       const updatedItems = cartItems.map((item) => {
         if (item.id === itemId) {
-          const roundedPrice = parseFloat((item.product.price * newQuantity).toFixed(2));
-          return { ...item, quantity: newQuantity, product: { ...item.product, price: roundedPrice } };
+          return { ...item, quantity: newQuantity }; // ✅ NO toques el precio
         }
         return item;
       });
@@ -115,6 +114,7 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
       onUpdateCartCount?.(totalItems);
     }
   };
+  
 
   const removeItem = async (itemId: number) => {
     const { error } = await supabase.from("cart_items").delete().eq("id", itemId);
@@ -190,10 +190,7 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
               </div>
               <button
                 className="w-full bg-rosa-oscuro text-blanco py-2 rounded-md hover:bg-rosa-oscuro/90"
-                onClick={() => {
-                  // Aquí puedes agregar la lógica para proceder al pago
-                  alert("Proceder al pago...");
-                }}
+                onClick={() => setShowCheckout(true)}
               >
                 Proceder al Pago
               </button>
@@ -202,7 +199,13 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
         )}
       </div>
 
-      {showCheckout && <CheckoutForm onClose={() => setShowCheckout(false)} total={total} />}
+      {showCheckout && (
+        <CheckoutForm 
+          onClose={() => setShowCheckout(false)} 
+          total={total} 
+          cartItems={cartItems}
+        />
+      )}
     </div>
   );
 }
