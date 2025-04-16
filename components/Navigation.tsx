@@ -68,11 +68,11 @@ export function Navigation({
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+    <nav className="fixed top-0 left-0 right-0 bg-blanco shadow-md z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="text-xl font-bold text-gray-800">
+          <Link href="/" className="text-xl font-bold text-negro">
             Inndumentaria
           </Link>
 
@@ -82,8 +82,8 @@ export function Navigation({
               onClick={() => onSectionChange("dama")}
               className={`text-sm font-medium ${
                 activeSection === "dama"
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-900"
+                  ? "text-rosa-oscuro"
+                  : "text-negro hover:text-rosa-oscuro"
               }`}
             >
               Dama
@@ -92,8 +92,8 @@ export function Navigation({
               onClick={() => onSectionChange("hombre")}
               className={`text-sm font-medium ${
                 activeSection === "hombre"
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-900"
+                  ? "text-rosa-oscuro"
+                  : "text-negro hover:text-rosa-oscuro"
               }`}
             >
               Hombre
@@ -102,8 +102,8 @@ export function Navigation({
               onClick={() => onSectionChange("ninos")}
               className={`text-sm font-medium ${
                 activeSection === "ninos"
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-900"
+                  ? "text-rosa-oscuro"
+                  : "text-negro hover:text-rosa-oscuro"
               }`}
             >
               Niños
@@ -112,8 +112,8 @@ export function Navigation({
               onClick={() => onSectionChange("accesorios")}
               className={`text-sm font-medium ${
                 activeSection === "accesorios"
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-900"
+                  ? "text-rosa-oscuro"
+                  : "text-negro hover:text-rosa-oscuro"
               }`}
             >
               Accesorios
@@ -125,7 +125,7 @@ export function Navigation({
             {!userId ? (
               <Button
                 variant="outline"
-                className="ml-4"
+                className="ml-4 border-rosa-oscuro text-rosa-oscuro hover:bg-rosa-oscuro hover:text-blanco"
                 onClick={() => router.push('/login')}
               >
                 Iniciar Sesión
@@ -145,24 +145,24 @@ export function Navigation({
                       className="rounded-full"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-600 text-sm">
+                    <div className="w-8 h-8 rounded-full bg-gris-suave flex items-center justify-center">
+                      <span className="text-negro text-sm">
                         {userEmail?.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-4 w-4 text-negro" />
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-blanco rounded-md shadow-lg py-1 z-50">
                     {isAdmin && (
                       <button
                         onClick={() => {
                           setIsUserMenuOpen(false);
                           router.push('/admin');
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                        className="w-full text-left px-4 py-2 text-sm text-negro hover:bg-rosa-claro flex items-center"
                       >
                         <LayoutDashboard className="h-4 w-4 mr-2" />
                         Panel de Admin
@@ -170,7 +170,7 @@ export function Navigation({
                     )}
                     <button
                       onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      className="w-full text-left px-4 py-2 text-sm text-negro hover:bg-rosa-claro flex items-center"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Cerrar Sesión
@@ -181,11 +181,11 @@ export function Navigation({
             )}
             <button
               onClick={onCartClick}
-              className="p-2 hover:bg-gray-100 rounded-full relative"
+              className="p-2 hover:bg-rosa-claro rounded-full relative"
             >
-              <ShoppingCart className="h-6 w-6" />
+              <ShoppingCart className="h-6 w-6 text-negro" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-rosa-oscuro text-blanco text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemCount}
                 </span>
               )}

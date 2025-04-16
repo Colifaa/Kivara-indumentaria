@@ -60,6 +60,11 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        'rosa-claro': '#FAD4D8',
+        'negro': '#000000',
+        'rosa-oscuro': '#BB6A8C',
+        'blanco': '#FFFFFF',
+        'gris-suave': '#F3F3F3',
       },
       keyframes: {
         'accordion-down': {

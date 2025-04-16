@@ -88,7 +88,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className=" min-h-screen bg-gray-50">
       <Navigation
         onSectionChange={setActiveSection}
         activeSection={activeSection}
@@ -96,7 +96,7 @@ export default function AdminPage() {
         onCartClick={handleCartClick}
         cartItemCount={cartItemCount}
       />
-      <div className="pt-16 px-4 sm:px-6 lg:px-8">
+      <div className=" relative pt-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto py-6">
           <div className="px-4 py-6 sm:px-0">
             <AdminDashboard />

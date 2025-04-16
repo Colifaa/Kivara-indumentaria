@@ -51,6 +51,7 @@ export function AdminDashboard() {
 
   useEffect(() => {
     loadData();
+    loadCategories();
   }, [currentPage]);
 
   useEffect(() => {
@@ -72,19 +73,23 @@ export function AdminDashboard() {
     setCurrentPage(1); // Resetear a la primera página cuando cambia el filtro
   }, [searchTerm, products, selectedCategoryId]);
 
+  const loadCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name");
+
+      if (error) throw error;
+      if (data) setCategories(data);
+    } catch (error) {
+      console.error("Error al cargar categorías:", error);
+    }
+  };
+
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Cargar categorías
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name", { ascending: true });
-
-      if (categoriesError) throw categoriesError;
-      if (categoriesData) setCategories(categoriesData);
-
-      // Cargar productos
       const { data, error } = await supabase
         .from("products")
         .select(`
@@ -109,7 +114,7 @@ export function AdminDashboard() {
         setTotalPages(Math.ceil(formattedProducts.length / itemsPerPage));
       }
     } catch (error) {
-      console.error("Error al cargar datos:", error);
+      console.error("Error al cargar productos:", error);
     } finally {
       setIsLoading(false);
     }
@@ -142,6 +147,14 @@ export function AdminDashboard() {
     }
   };
 
+  // Función para formatear el precio en ARS
+  const formatPrice = (price: number | null) => {
+    if (price === null || price === undefined) {
+      return "Precio no disponible";
+    }
+    return `$${price.toLocaleString("es-AR")}`;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -151,9 +164,9 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-blanco rounded-lg shadow">
       <div className="px-4 py-5 sm:px-6 flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
+        <h1 className="text-2xl font-bold text-negro">Panel de Administración</h1>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="relative">
             <input
@@ -161,18 +174,18 @@ export function AdminDashboard() {
               placeholder="Buscar productos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 border border-rosa-oscuro rounded-md focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 text-rosa-oscuro" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
           </div>
           <select
             value={selectedCategoryId || ""}
-            onChange={(e) => setSelectedCategoryId(e.target.value ? parseInt(e.target.value) : null)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            onChange={(e) => setSelectedCategoryId(e.target.value ? Number(e.target.value) : null)}
+            className="px-4 py-2 border border-rosa-oscuro rounded-md focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
           >
             <option value="">Todas las categorías</option>
             {categories.map((category) => (
@@ -187,7 +200,7 @@ export function AdminDashboard() {
               setSelectedCategoryId(null);
               setIsEditing(true);
             }}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+            className="bg-rosa-oscuro text-blanco px-4 py-2 rounded-md hover:bg-rosa-claro hover:text-negro flex items-center"
           >
             <Plus className="w-5 h-5 mr-2" />
             Nuevo Producto
@@ -215,7 +228,7 @@ export function AdminDashboard() {
       <div className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {getCurrentPageProducts().map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div key={product.id} className="bg-blanco rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div className="relative h-48 w-full">
                 {product.image_url && product.image_url[0] ? (
                   <Image
@@ -225,16 +238,16 @@ export function AdminDashboard() {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">Sin imagen</span>
+                  <div className="w-full h-full bg-gris-suave flex items-center justify-center">
+                    <span className="text-rosa-oscuro">Sin imagen</span>
                   </div>
                 )}
               </div>
               <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                <p className="text-gray-600 mb-2">${product.price.toFixed(2)}</p>
+                <h3 className="text-lg font-semibold text-negro mb-2">{product.name}</h3>
+                <p className="text-rosa-oscuro mb-2">{formatPrice(product.price)}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-negro">
                     Stock: {product.stock}
                   </span>
                   <div className="flex space-x-2">
@@ -243,13 +256,13 @@ export function AdminDashboard() {
                         setEditingProduct(product);
                         setIsEditing(true);
                       }}
-                      className="p-2 text-blue-600 hover:text-blue-700"
+                      className="p-2 text-rosa-oscuro hover:text-rosa-claro"
                     >
                       <Pencil className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(product.id)}
-                      className="p-2 text-red-600 hover:text-red-700"
+                      className="p-2 text-rosa-oscuro hover:text-rosa-claro"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -265,19 +278,19 @@ export function AdminDashboard() {
           <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+            className="p-2 rounded-md bg-gris-suave hover:bg-rosa-claro disabled:opacity-50"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5 text-negro" />
           </button>
-          <span className="text-gray-600">
+          <span className="text-negro">
             Página {currentPage} de {totalPages}
           </span>
           <button
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+            className="p-2 rounded-md bg-gris-suave hover:bg-rosa-claro disabled:opacity-50"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5 text-negro" />
           </button>
         </div>
       </div>

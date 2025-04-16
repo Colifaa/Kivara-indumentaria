@@ -131,17 +131,17 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-negro bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-blanco p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Carrito de Compras</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
-            <X className="h-6 w-6" />
+          <h2 className="text-2xl font-bold text-negro">Carrito de Compras</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gris-suave rounded-full">
+            <X className="h-6 w-6 text-negro" />
           </button>
         </div>
 
         {cartItems.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">Tu carrito está vacío</p>
+          <p className="text-negro text-center py-4">Tu carrito está vacío</p>
         ) : (
           <>
             <div className="space-y-4">
@@ -154,19 +154,19 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
                       className="w-20 h-20 object-cover rounded"
                     />
                     <div>
-                      <h3 className="font-medium">{item.product.name}</h3>
-                      <p className="text-gray-600">${item.product.price}</p>
+                      <h3 className="font-medium text-negro">{item.product.name}</h3>
+                      <p className="text-negro">${item.product.price}</p>
                       <div className="flex items-center space-x-2 mt-2">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="px-2 py-1 border rounded hover:bg-gray-100"
+                          className="px-2 py-1 border rounded hover:bg-rosa-claro"
                         >
                           -
                         </button>
-                        <span className="px-2 py-1 border rounded">{item.quantity}</span>
+                        <span className="px-2 py-1 border rounded text-negro">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="px-2 py-1 border rounded hover:bg-gray-100"
+                          className="px-2 py-1 border rounded hover:bg-rosa-claro"
                         >
                           +
                         </button>
@@ -174,9 +174,9 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <p className="font-medium">${item.product.price * item.quantity}</p>
-                    <button onClick={() => removeItem(item.id)} className="p-2 hover:bg-red-50 rounded-full">
-                      <Trash2 className="h-5 w-5 text-red-500" />
+                    <p className="font-medium text-negro">${item.product.price * item.quantity}</p>
+                    <button onClick={() => removeItem(item.id)} className="p-2 hover:bg-rosa-claro rounded-full">
+                      <Trash2 className="h-5 w-5 text-rosa-oscuro" />
                     </button>
                   </div>
                 </div>
@@ -185,11 +185,11 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
 
             <div className="mt-6 border-t pt-4">
               <div className="flex justify-between items-center mb-4">
-                <span className="font-medium">Total:</span>
-                <span className="text-xl font-bold">${total}</span>
+                <span className="font-medium text-negro">Total:</span>
+                <span className="text-xl font-bold text-negro">${total}</span>
               </div>
               <button
-                className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                className="w-full bg-rosa-oscuro text-blanco py-2 rounded-md hover:bg-rosa-oscuro/90"
                 onClick={() => {
                   // Aquí puedes agregar la lógica para proceder al pago
                   alert("Proceder al pago...");
