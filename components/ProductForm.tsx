@@ -43,7 +43,7 @@ interface SubSubcategory {
 interface ProductFormProps {
   product?: Product | null;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (updatedProduct?: Product) => void;
 }
 
 export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
@@ -303,27 +303,49 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
           }
         }
 
-        const { error: updateError } = await supabase
+        const { data, error: updateError } = await supabase
           .from("products")
           .update(productData)
-          .eq("id", product.id);
+          .eq("id", product.id)
+          .select()
+          .single();
 
         if (updateError) {
           console.error('Error al actualizar producto:', updateError);
           throw updateError;
         }
+
+        if (data) {
+          const updatedProduct = {
+            ...data,
+            category: categories.find(c => c.id === data.category_id)?.name,
+            subcategory: subcategories.find(s => s.id === data.subcategory_id)?.name,
+            sub_subcategory: subSubcategories.find(s => s.id === data.sub_subcategory_id)?.name
+          };
+          onSuccess(updatedProduct);
+        }
       } else {
-        const { error: insertError } = await supabase
+        const { data, error: insertError } = await supabase
           .from("products")
-          .insert([productData]);
+          .insert([productData])
+          .select()
+          .single();
         
         if (insertError) {
           console.error('Error al insertar producto:', insertError);
           throw insertError;
         }
-      }
 
-      onSuccess();
+        if (data) {
+          const updatedProduct = {
+            ...data,
+            category: categories.find(c => c.id === data.category_id)?.name,
+            subcategory: subcategories.find(s => s.id === data.subcategory_id)?.name,
+            sub_subcategory: subSubcategories.find(s => s.id === data.sub_subcategory_id)?.name
+          };
+          onSuccess(updatedProduct);
+        }
+      }
     } catch (error) {
       console.error("Error al guardar producto:", error);
       alert("Error al guardar el producto. Por favor, verifica los datos e inténtalo de nuevo.");

@@ -214,13 +214,19 @@ export function AdminDashboard() {
           onClose={() => {
             setIsEditing(false);
             setEditingProduct(null);
-            setSelectedCategoryId(null);
           }}
-          onSuccess={() => {
+          onSuccess={(updatedProduct) => {
             setIsEditing(false);
             setEditingProduct(null);
-            setSelectedCategoryId(null);
-            loadData();
+            if (updatedProduct) {
+              // Actualizamos el producto en el estado
+              setProducts(prevProducts => 
+                prevProducts.map(p => p.id === updatedProduct.id ? updatedProduct : p)
+              );
+              setFilteredProducts(prevFiltered => 
+                prevFiltered.map(p => p.id === updatedProduct.id ? updatedProduct : p)
+              );
+            }
           }}
         />
       )}
