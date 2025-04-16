@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ParticlesBackground } from '@/components/ParticlesBackground';
+import Wsp from '@/components/Wsp';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${inter.className} bg-rosa-claro`} suppressHydrationWarning>
+        <Wsp/>
         <ParticlesBackground />
         {children}
       </body>
