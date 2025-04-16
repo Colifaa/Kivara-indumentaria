@@ -7,6 +7,7 @@ import { ShoppingCart, Menu, X, ChevronDown, LogOut, LayoutDashboard } from "luc
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface NavigationProps {
   onSectionChange: (section: string) => void;
@@ -68,64 +69,64 @@ export function Navigation({
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-blanco shadow-md z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="fixed top-0 left-0 right-0 bg-blanco shadow-md z-50 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex justify-between items-center h-16 w-full">
           {/* Logo */}
-          <Link href="/" className="text-xl font-bold text-negro">
+          <Link href="/" className="text-xl font-bold text-negro whitespace-nowrap">
             Inndumentaria
           </Link>
 
           {/* Enlaces de navegación */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex space-x-4 lg:space-x-8">
             <button
               onClick={() => onSectionChange("dama")}
-              className={`text-sm font-medium ${
-                activeSection === "dama"
-                  ? "text-rosa-oscuro"
-                  : "text-negro hover:text-rosa-oscuro"
-              }`}
+              className={`text-sm font-medium px-2 py-1 rounded transition-colors duration-200
+                ${activeSection === "dama"
+                  ? "text-rosa-oscuro bg-rosa-claro"
+                  : "text-negro hover:text-rosa-oscuro"}
+              `}
             >
               Dama
             </button>
             <button
               onClick={() => onSectionChange("hombre")}
-              className={`text-sm font-medium ${
-                activeSection === "hombre"
-                  ? "text-rosa-oscuro"
-                  : "text-negro hover:text-rosa-oscuro"
-              }`}
+              className={`text-sm font-medium px-2 py-1 rounded transition-colors duration-200
+                ${activeSection === "hombre"
+                  ? "text-rosa-oscuro bg-rosa-claro"
+                  : "text-negro hover:text-rosa-oscuro"}
+              `}
             >
               Hombre
             </button>
             <button
               onClick={() => onSectionChange("ninos")}
-              className={`text-sm font-medium ${
-                activeSection === "ninos"
-                  ? "text-rosa-oscuro"
-                  : "text-negro hover:text-rosa-oscuro"
-              }`}
+              className={`text-sm font-medium px-2 py-1 rounded transition-colors duration-200
+                ${activeSection === "ninos"
+                  ? "text-rosa-oscuro bg-rosa-claro"
+                  : "text-negro hover:text-rosa-oscuro"}
+              `}
             >
               Niños
             </button>
             <button
               onClick={() => onSectionChange("accesorios")}
-              className={`text-sm font-medium ${
-                activeSection === "accesorios"
-                  ? "text-rosa-oscuro"
-                  : "text-negro hover:text-rosa-oscuro"
-              }`}
+              className={`text-sm font-medium px-2 py-1 rounded transition-colors duration-200
+                ${activeSection === "accesorios"
+                  ? "text-rosa-oscuro bg-rosa-claro"
+                  : "text-negro hover:text-rosa-oscuro"}
+              `}
             >
               Accesorios
             </button>
           </div>
 
           {/* Carrito y Login */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {!userId ? (
               <Button
                 variant="outline"
-                className="ml-4 border-rosa-oscuro text-rosa-oscuro hover:bg-rosa-oscuro hover:text-blanco"
+                className="ml-2 sm:ml-4 border-rosa-oscuro text-rosa-oscuro hover:bg-rosa-oscuro hover:text-blanco px-2 sm:px-4 py-1 sm:py-2 text-sm"
                 onClick={() => router.push('/login')}
               >
                 Iniciar Sesión
@@ -195,7 +196,7 @@ export function Navigation({
           {/* Botón de menú móvil */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2"
+            className="md:hidden p-2 ml-2"
           >
             <svg
               className="h-6 w-6"
@@ -216,98 +217,73 @@ export function Navigation({
         </div>
 
         {/* Menú móvil */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <button
-                onClick={() => {
-                  onSectionChange("dama");
-                  setIsMenuOpen(false);
-                }}
-                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                  activeSection === "dama"
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                Dama
-              </button>
-              <button
-                onClick={() => {
-                  onSectionChange("hombre");
-                  setIsMenuOpen(false);
-                }}
-                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                  activeSection === "hombre"
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                Hombre
-              </button>
-              <button
-                onClick={() => {
-                  onSectionChange("ninos");
-                  setIsMenuOpen(false);
-                }}
-                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                  activeSection === "ninos"
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                Niños
-              </button>
-              <button
-                onClick={() => {
-                  onSectionChange("accesorios");
-                  setIsMenuOpen(false);
-                }}
-                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                  activeSection === "accesorios"
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                Accesorios
-              </button>
-              {userId ? (
-                <>
-                  {isAdmin && (
-                    <button
-                      onClick={() => {
-                        router.push("/admin");
-                        setIsMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Panel de Admin
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      handleSignOut();
-                      setIsMenuOpen(false);
-                    }}
-                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                  >
-                    Cerrar Sesión
-                  </button>
-                </>
-              ) : (
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden w-full bg-blanco shadow-lg rounded-b-lg mt-2"
+            >
+              <div className="px-2 pt-2 pb-3 space-y-1 flex flex-col">
                 <button
                   onClick={() => {
-                    router.push("/login");
+                    onSectionChange("dama");
                     setIsMenuOpen(false);
                   }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                    activeSection === "dama"
+                      ? "bg-rosa-claro text-rosa-oscuro"
+                      : "text-negro hover:bg-rosa-claro hover:text-rosa-oscuro"
+                  }`}
                 >
-                  Iniciar Sesión
+                  Dama
                 </button>
-              )}
-            </div>
-          </div>
-        )}
+                <button
+                  onClick={() => {
+                    onSectionChange("hombre");
+                    setIsMenuOpen(false);
+                  }}
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                    activeSection === "hombre"
+                      ? "bg-rosa-claro text-rosa-oscuro"
+                      : "text-negro hover:bg-rosa-claro hover:text-rosa-oscuro"
+                  }`}
+                >
+                  Hombre
+                </button>
+                <button
+                  onClick={() => {
+                    onSectionChange("ninos");
+                    setIsMenuOpen(false);
+                  }}
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                    activeSection === "ninos"
+                      ? "bg-rosa-claro text-rosa-oscuro"
+                      : "text-negro hover:bg-rosa-claro hover:text-rosa-oscuro"
+                  }`}
+                >
+                  Niños
+                </button>
+                <button
+                  onClick={() => {
+                    onSectionChange("accesorios");
+                    setIsMenuOpen(false);
+                  }}
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
+                    activeSection === "accesorios"
+                      ? "bg-rosa-claro text-rosa-oscuro"
+                      : "text-negro hover:bg-rosa-claro hover:text-rosa-oscuro"
+                  }`}
+                >
+                  Accesorios
+                </button>
+           
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );
