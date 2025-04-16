@@ -6,12 +6,16 @@ import { Navigation } from "@/components/Navigation";
 import { SearchBar } from "@/components/SearchBar";
 import { ProductCard } from "@/components/ProductCard";
 import { Cart } from "@/components/Cart";
-import { ShoppingCart, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingCart, Heart, ChevronLeft, ChevronRight, X, Tag, Layers, Filter } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Carousel } from "@/components/Carousel";
 import { Product, Category, Subcategory, SubSubcategory } from '@/types/product';
 import { motion, AnimatePresence } from "framer-motion";
 import { ProductDetail } from "@/components/ProductDetail";
+import Image from "next/image";
+import { ImageIcon } from "lucide-react";
+import { Testimonials } from "@/components/Testimonials";
+import { Footer } from "@/components/Footer";
 
 interface FilterState {
   category: string | null;
@@ -392,7 +396,6 @@ export default function Home() {
   };
 
   const getUniqueCategories = (section: string) => {
-    // Mapear secciones a nombres de categorías
     const sectionToCategory: Record<string, string> = {
       "dama": "Damas",
       "hombre": "Hombres",
@@ -400,21 +403,16 @@ export default function Home() {
       "accesorios": "Accesorios"
     };
 
-    const categoryName = sectionToCategory[section];
-    
-    // Filtrar productos por la categoría correspondiente a la sección
+    // Filtrar productos por la sección actual
     const sectionProducts = products.filter(product => 
-      product.category?.name === categoryName
+      product.category?.name === sectionToCategory[section]
     );
 
-    console.log(`Productos encontrados para sección ${section}:`, sectionProducts.length);
-
-    // Obtener categorías únicas
+    // Obtener categorías únicas para esta sección
     const uniqueCategories = Array.from(
       new Set(sectionProducts.map(product => product.category?.name))
-    ).filter(Boolean);
+    ).filter(Boolean) as string[];
 
-    console.log(`Categorías únicas para ${section}:`, uniqueCategories);
     return uniqueCategories;
   };
 
@@ -429,26 +427,21 @@ export default function Home() {
 
     const categoryName = sectionToCategory[section];
     
-    // Primero encontrar la categoría correcta
-    const category = products.find(product => 
+    // Encontrar la categoría correcta
+    const categoryProducts = products.filter(product => 
       product.category?.name === categoryName
-    )?.category;
-
-    if (!category) {
-      console.log(`No se encontró la categoría para la sección ${section}`);
+    );
+    
+    if (categoryProducts.length === 0) {
+      console.log(`No se encontraron productos para la categoría ${categoryName}`);
       return [];
     }
-
-    // Filtrar productos por la categoría correspondiente a la sección
-    const sectionProducts = products.filter(product => 
-      product.category?.id === category.id
-    );
 
     // Obtener subcategorías únicas que pertenezcan a esta categoría
     const uniqueSubcategoriesMap = new Map();
     
-    sectionProducts.forEach(product => {
-      if (product.subcategory && product.subcategory.category_id === category.id) {
+    categoryProducts.forEach(product => {
+      if (product.subcategory && product.subcategory.category_id === product.category?.id) {
         uniqueSubcategoriesMap.set(product.subcategory.id, product.subcategory);
       }
     });
@@ -459,47 +452,45 @@ export default function Home() {
   };
 
   const getUniqueSubcategories = (section: string, category: string) => {
-    // Filtrar productos por categoría
-    const categoryProducts = products.filter(product => 
-      product.category?.name === category
-    );
-
-    console.log(`Productos encontrados para categoría ${category}:`, categoryProducts.length);
-
-    // Obtener subcategorías únicas
-    const uniqueSubcategoriesMap = new Map();
-    
-    categoryProducts.forEach(product => {
-      if (product.subcategory) {
-        uniqueSubcategoriesMap.set(product.subcategory.id, product.subcategory);
-      }
+    // Obtener solo los productos que pertenecen a esta sección y categoría
+    const sectionProducts = products.filter(product => {
+      const isCorrectCategory = product.category?.name === category;
+      const belongsToSection = product.category?.name === (
+        section === "dama" ? "Damas" :
+        section === "hombre" ? "Hombres" :
+        section === "ninos" ? "Niños" :
+        section === "accesorios" ? "Accesorios" : ""
+      );
+      return isCorrectCategory && belongsToSection;
     });
 
-    const subcategories = Array.from(uniqueSubcategoriesMap.values());
-    console.log(`Subcategorías para ${category}:`, subcategories);
-    return subcategories;
+    // Obtener subcategorías únicas
+    const uniqueSubcategories = Array.from(
+      new Set(sectionProducts.map(product => product.subcategory?.name))
+    ).filter(Boolean) as string[];
+
+    return uniqueSubcategories;
   };
 
   const getUniqueSubSubcategories = (section: string, subcategory: string) => {
-    // Filtrar productos por subcategoría
-    const filteredProducts = products.filter(product => 
-      product.subcategory?.name === subcategory
-    );
-
-    console.log(`Productos encontrados para subcategoría ${subcategory}:`, filteredProducts.length);
-
-    // Obtener sub-subcategorías únicas
-    const uniqueSubSubcategoriesMap = new Map();
-    
-    filteredProducts.forEach(product => {
-      if (product.sub_subcategory) {
-        uniqueSubSubcategoriesMap.set(product.sub_subcategory.id, product.sub_subcategory);
-      }
+    // Obtener solo los productos que pertenecen a esta subcategoría y sección
+    const sectionProducts = products.filter(product => {
+      const isCorrectSubcategory = product.subcategory?.name === subcategory;
+      const belongsToSection = product.category?.name === (
+        section === "dama" ? "Damas" :
+        section === "hombre" ? "Hombres" :
+        section === "ninos" ? "Niños" :
+        section === "accesorios" ? "Accesorios" : ""
+      );
+      return isCorrectSubcategory && belongsToSection;
     });
 
-    const subSubcategories = Array.from(uniqueSubSubcategoriesMap.values());
-    console.log(`Sub-subcategorías para ${subcategory}:`, subSubcategories);
-    return subSubcategories;
+    // Obtener sub-subcategorías únicas
+    const uniqueSubSubcategories = Array.from(
+      new Set(sectionProducts.map(product => product.sub_subcategory?.name))
+    ).filter(Boolean) as string[];
+
+    return uniqueSubSubcategories;
   };
 
   const handleCategoryClick = (category: string, section: string) => {
@@ -808,6 +799,69 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Sección de Categorías Destacadas */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-negro text-center mb-8">Categorías Destacadas</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  id: "dama",
+                  title: "Dama",
+                  image: "/categories/Hombre.jpeg",
+                  description: "Encuentra las últimas tendencias en moda femenina"
+                },
+                {
+                  id: "hombre",
+                  title: "Hombre",
+                  image: "/categories/Dama.jpeg",
+                  description: "Estilo y comodidad para el hombre moderno"
+                },
+                {
+                  id: "ninos",
+                  title: "Niños",
+                  image: "/categories/Niños.jpeg",
+                  description: "Ropa divertida y cómoda para los más pequeños"
+                },
+                {
+                  id: "accesorios",
+                  title: "Accesorios",
+                  image: "/categories/Accesorios.jpg",
+                  description: "Complementa tu look con nuestros accesorios"
+                }
+              ].map((category) => (
+                <motion.div
+                  key={category.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ scale: 1.03 }}
+                  className="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg"
+                  onClick={() => scrollToSection(category.id)}
+                >
+                  <div className="relative aspect-[4/5]">
+                    <Image
+                      src={category.image}
+                      alt={category.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-negro/80 via-negro/40 to-transparent opacity-80 transition-opacity duration-300" />
+                    <div className="absolute inset-0 flex flex-col justify-end p-6">
+                      <h3 className="text-2xl font-bold text-blanco mb-2">{category.title}</h3>
+                      <p className="text-sm text-blanco/90 mb-4">{category.description}</p>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-rosa-oscuro text-blanco px-6 py-2 rounded-full text-sm font-medium hover:bg-rosa-claro transition-colors duration-300"
+                      >
+                        Explorar
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
           {/* Secciones de productos */}
           {["dama", "hombre", "ninos", "accesorios"].map((section) => {
             const { products: paginatedProducts, totalPages } = getPaginatedProducts(section);
@@ -850,82 +904,187 @@ export default function Home() {
                 
                 {/* Panel de filtros */}
                 {showFilterPanel[section] && (
-                  <div className=" relative mb-6 p-4 bg-white rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-3">Filtros</h3>
+                  <div className="fixed inset-0 z-50">
+                    {/* Overlay */}
+                    <div 
+                      className="fixed inset-0 bg-black/50"
+                      onClick={() => setShowFilterPanel(prev => ({ ...prev, [section]: false }))}
+                    />
                     
-                    {/* Subcategorías */}
-                    <div className="mb-4">
-                      <h4 className="font-medium mb-2">Subcategorías</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {getSubcategoriesForSection(section).map((subcategory) => (
-                          <button
-                            key={subcategory.id}
-                            onClick={() => selectSubcategory(subcategory.name, section)}
-                            className={`px-3 py-1 rounded-full ${
-                              tempFilters[section].subcategory === subcategory.name
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                            }`}
-                          >
-                            {subcategory.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Sub-subcategorías */}
-                    {tempFilters[section].subcategory && (
-                      <div className="mb-4">
-                        <h4 className="font-medium mb-2">Sub-subcategorías</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {getUniqueSubSubcategories(
-                            section,
-                            tempFilters[section].subcategory!
-                          ).map((subSubcategory) => (
-                            <button
-                              key={subSubcategory.id}
-                              onClick={() => selectSubSubcategory(subSubcategory.name, section)}
-                              className={`px-3 py-1 rounded-full ${
-                                tempFilters[section].subSubcategory === subSubcategory.name
-                                  ? "bg-blue-600 text-white"
-                                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                              }`}
+                    {/* Panel de filtros */}
+                    <div className="fixed top-0 right-0 h-full w-full sm:w-96 bg-blanco shadow-lg transform transition-transform duration-300 ease-in-out">
+                      <div className="h-full flex flex-col">
+                        {/* Header */}
+                        <div className="p-4 border-b border-gris-suave">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xl font-semibold text-negro">Filtros</h3>
+                            <button 
+                              onClick={() => setShowFilterPanel(prev => ({ ...prev, [section]: false }))}
+                              className="text-negro hover:text-rosa-oscuro p-2"
                             >
-                              {subSubcategory.name}
+                              <X className="h-6 w-6" />
                             </button>
-                          ))}
+                          </div>
+                        </div>
+                        
+                        {/* Contenido con scroll */}
+                        <div className="flex-1 overflow-y-auto p-4">
+                          <div className="space-y-6">
+                            {/* Categorías */}
+                            <div className="space-y-2">
+                              <h4 className="text-lg font-medium text-negro flex items-center">
+                                <Tag className="h-5 w-5 mr-2" />
+                                Categorías
+                              </h4>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                {getUniqueCategories(section).map((category) => (
+                                  <button
+                                    key={category}
+                                    onClick={() => handleCategoryClick(category, section)}
+                                    className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+                                      filters[section].category === category
+                                        ? 'bg-rosa-oscuro text-blanco'
+                                        : 'bg-gris-suave text-negro hover:bg-rosa-claro'
+                                    }`}
+                                  >
+                                    {category}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Subcategorías */}
+                            {filters[section].category && (
+                              <div className="space-y-2">
+                                <h4 className="text-lg font-medium text-negro flex items-center">
+                                  <Layers className="h-5 w-5 mr-2" />
+                                  Subcategorías
+                                </h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                  {getUniqueSubcategories(section, filters[section].category!).map((subcategory) => (
+                                    <button
+                                      key={subcategory}
+                                      onClick={() => handleSubcategoryClick(subcategory, section)}
+                                      className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+                                        filters[section].subcategory === subcategory
+                                          ? 'bg-rosa-oscuro text-blanco'
+                                          : 'bg-gris-suave text-negro hover:bg-rosa-claro'
+                                      }`}
+                                    >
+                                      {subcategory}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Sub-subcategorías */}
+                            {filters[section].subcategory && (
+                              <div className="space-y-2">
+                                <h4 className="text-lg font-medium text-negro flex items-center">
+                                  <Filter className="h-5 w-5 mr-2" />
+                                  Tipos
+                                </h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                  {getUniqueSubSubcategories(section, filters[section].subcategory!).map((subSubcategory) => (
+                                    <button
+                                      key={subSubcategory}
+                                      onClick={() => handleSubSubcategoryClick(subSubcategory, section)}
+                                      className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+                                        filters[section].subSubcategory === subSubcategory
+                                          ? 'bg-rosa-oscuro text-blanco'
+                                          : 'bg-gris-suave text-negro hover:bg-rosa-claro'
+                                      }`}
+                                    >
+                                      {subSubcategory}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 border-t border-gris-suave">
+                          <button
+                            onClick={() => resetFilters(section)}
+                            className="w-full border border-rosa-oscuro text-rosa-oscuro py-3 rounded-lg font-medium hover:bg-rosa-claro transition-colors duration-200"
+                          >
+                            Limpiar Filtros
+                          </button>
                         </div>
                       </div>
-                    )}
-                    
-                    {/* Botones de acción */}
-                    <div className="flex gap-2 mt-4">
-                      <button
-                        onClick={() => applyFilters(section)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        Aplicar Filtros
-                      </button>
-                      <button
-                        onClick={() => resetFilters(section)}
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-                      >
-                        Resetear Filtros
-                      </button>
                     </div>
                   </div>
                 )}
 
                 {/* Grid de productos */}
-                <div className="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {paginatedProducts.map((product, idx) => (
-                    <ProductCard
+                    <motion.div
                       key={product.id}
-                      product={product}
-                      userId={userId}
-                      onAddToCart={addToCart}
-                      onDetail={() => openProductDetail(product, idx, paginatedProducts)}
-                    />
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: idx * 0.1 }}
+                      className="group relative bg-blanco rounded-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
+                    >
+                      <div 
+                        className="relative aspect-square overflow-hidden cursor-pointer"
+                        onClick={() => openProductDetail(product, idx, paginatedProducts)}
+                      >
+                        {product.image_url ? (
+                          <Image
+                            src={Array.isArray(product.image_url) ? product.image_url[0] : product.image_url}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="object-cover transform group-hover:scale-105 transition-transform duration-500"
+                            priority={idx < 4}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gris-suave flex items-center justify-center">
+                            <ImageIcon className="h-8 w-8 sm:h-12 sm:w-12 text-rosa-oscuro" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-negro/80 via-negro/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4 sm:pb-6">
+                          <span className="text-blanco text-sm sm:text-base font-medium px-3 sm:px-4 py-1.5 sm:py-2 bg-rosa-oscuro/90 rounded-full transform -translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                            Ver detalles
+                          </span>
+                        </div>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(product);
+                          }}
+                          className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-rosa-oscuro text-blanco p-2 sm:p-2.5 rounded-full opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-rosa-claro shadow-lg"
+                          aria-label="Agregar al carrito"
+                        >
+                          <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+                        </motion.button>
+                      </div>
+                      
+                      <div className="p-3 sm:p-4 lg:p-5">
+                        <h3 className="text-base sm:text-lg font-semibold text-negro mb-1 sm:mb-2 line-clamp-2 group-hover:text-rosa-oscuro transition-colors duration-300">
+                          {product.name}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xl sm:text-2xl font-bold text-rosa-oscuro">
+                            ${typeof product.price === 'number' ? product.price.toLocaleString("es-AR") : '0'}
+                          </p>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => openProductDetail(product, idx, paginatedProducts)}
+                            className="text-rosa-oscuro hover:text-rosa-claro transition-colors duration-200 font-medium text-sm sm:text-base"
+                          >
+                            Ver detalles
+                          </motion.button>
+                        </div>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
 
@@ -972,6 +1131,12 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Sección de Testimonios */}
+      <Testimonials />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
