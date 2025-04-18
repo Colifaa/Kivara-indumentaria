@@ -49,13 +49,13 @@ export function AdminDashboard() {
 
   const supabase = createClientComponentClient();
 
+  // Remove currentPage from dependency array
   useEffect(() => {
     loadData();
     loadCategories();
-  }, [currentPage]);
+  }, []); // Only run once when component mounts
 
   useEffect(() => {
-    // Filtrar productos cuando cambia el término de búsqueda o la categoría
     let filtered = products;
     
     if (searchTerm.trim() !== "") {
@@ -70,8 +70,14 @@ export function AdminDashboard() {
     
     setFilteredProducts(filtered);
     setTotalPages(Math.ceil(filtered.length / itemsPerPage));
-    setCurrentPage(1); // Resetear a la primera página cuando cambia el filtro
-  }, [searchTerm, products, selectedCategoryId]);
+  }, [searchTerm, products, selectedCategoryId]); // Remove setCurrentPage(1) from here
+
+  // Add a separate effect for handling page reset
+  useEffect(() => {
+    if (searchTerm || selectedCategoryId) {
+      setCurrentPage(1);
+    }
+  }, [searchTerm, selectedCategoryId]);
 
   const loadCategories = async () => {
     try {
