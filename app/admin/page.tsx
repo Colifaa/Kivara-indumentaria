@@ -5,6 +5,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { Navigation } from "@/components/Navigation";
 import { AdminDashboard } from "@/components/AdminDashboard";
+import { CommentManager } from "@/components/CommentManager";
 
 export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -100,6 +101,7 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto py-6">
           <div className="px-4 py-6 sm:px-0">
             <AdminDashboard />
+            <CommentManager />
           </div>
         </div>
       </div>

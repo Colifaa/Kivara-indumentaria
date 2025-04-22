@@ -33,9 +33,11 @@ export function Testimonials() {
   useEffect(() => {
     const fetchComments = async () => {
       try {
+        // En la función fetchComments
         const { data: commentsData, error: commentsError } = await supabase
           .from("comments")
           .select("*")
+          .eq('is_approved', true)  // Solo traer comentarios aprobados
           .not("rating", "is", null)
           .order("created_at", { ascending: false });
 
