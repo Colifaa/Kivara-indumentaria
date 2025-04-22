@@ -16,6 +16,7 @@ import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 import { Testimonials } from "@/components/Testimonials";
 import { Footer } from "@/components/Footer";
+import { CommentForm } from "@/components/CommentForm";
 
 interface FilterState {
   category: string | null;
@@ -1134,6 +1135,8 @@ export default function Home() {
 
       {/* Sección de Testimonios */}
       <Testimonials />
+
+      <CommentForm user={userId ?? null} />
 
       {/* Footer */}
       <Footer />

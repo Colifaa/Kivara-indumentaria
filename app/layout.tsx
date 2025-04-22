@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ParticlesBackground } from '@/components/ParticlesBackground';
 import Wsp from '@/components/Wsp';
+import { ToastProvider, ToastViewport } from "@/components/ui/toast"; // Importa ToastProvider y ToastViewport
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,9 +20,14 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${inter.className} bg-rosa-claro`} suppressHydrationWarning>
-        <Wsp/>
-        <ParticlesBackground />
-        {children}
+        {/* Envolver toda la aplicación con ToastProvider */}
+        <ToastProvider>
+          <Wsp />
+          <ParticlesBackground />
+          {children}
+          {/* Agregar el viewport para mostrar las notificaciones */}
+          <ToastViewport />
+        </ToastProvider>
       </body>
     </html>
   );
