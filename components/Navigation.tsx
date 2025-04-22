@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Menu, X, ChevronDown, LogOut, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, ChevronDown, LogOut, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -30,14 +30,24 @@ export function Navigation({
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const supabase = createClientComponentClient();
 
   useEffect(() => {
     checkUser();
-  }, []);
+    
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [scrolled]);
 
-  // En la función checkUser, añade logs para depuración
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
@@ -46,7 +56,6 @@ export function Navigation({
       const avatarUrl = user.user_metadata?.avatar_url;
       setUserAvatar(typeof avatarUrl === 'string' ? avatarUrl : null);
       
-      // Enfoque alternativo: usar la función RPC en lugar de consultar directamente
       const { data, error } = await supabase.rpc('is_admin', { 
         email_param: user.email 
       });
@@ -68,65 +77,78 @@ export function Navigation({
     router.push('/');
   };
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 bg-blanco shadow-md z-50 w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex justify-between items-center h-16 w-full">
-          {/* Logo */}
-          <Link href="/" className="text-xl font-bold text-negro whitespace-nowrap">
-            Inndumentaria
-          </Link>
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
-          {/* Enlaces de navegación */}
-          <div className="hidden md:flex space-x-4 lg:space-x-8">
-            <button
-              onClick={() => onSectionChange("dama")}
-              className={`text-sm font-medium px-2 py-1 rounded transition-colors duration-200
-                ${activeSection === "dama"
-                  ? "text-rosa-oscuro bg-rosa-claro"
-                  : "text-negro hover:text-rosa-oscuro"}
-              `}
-            >
-              Dama
-            </button>
-            <button
-              onClick={() => onSectionChange("hombre")}
-              className={`text-sm font-medium px-2 py-1 rounded transition-colors duration-200
-                ${activeSection === "hombre"
-                  ? "text-rosa-oscuro bg-rosa-claro"
-                  : "text-negro hover:text-rosa-oscuro"}
-              `}
-            >
-              Hombre
-            </button>
-            <button
-              onClick={() => onSectionChange("ninos")}
-              className={`text-sm font-medium px-2 py-1 rounded transition-colors duration-200
-                ${activeSection === "ninos"
-                  ? "text-rosa-oscuro bg-rosa-claro"
-                  : "text-negro hover:text-rosa-oscuro"}
-              `}
-            >
-              Niños
-            </button>
-            <button
-              onClick={() => onSectionChange("accesorios")}
-              className={`text-sm font-medium px-2 py-1 rounded transition-colors duration-200
-                ${activeSection === "accesorios"
-                  ? "text-rosa-oscuro bg-rosa-claro"
-                  : "text-negro hover:text-rosa-oscuro"}
-              `}
-            >
-              Accesorios
-            </button>
+  const navItems = [
+    { name: "Dama", value: "dama" },
+    { name: "Hombre", value: "hombre" },
+    { name: "Niños", value: "ninos" },
+    { name: "Accesorios", value: "accesorios" }
+  ];
+
+  return (
+    <nav 
+    className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
+      scrolled ? "bg-[#e8b2bb]/95 backdrop-blur-md shadow-sm" : "bg-[#e8b2bb]"
+    }`}
+  >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        {/* Contenedor principal con altura fija */}
+        <div className="flex justify-between items-center h-16 sm:h-20 w-full">
+          {/* Logo con tamaño fijo para evitar que se contraiga */}
+          <div className="flex-shrink-0 w-32 sm:w-48">
+            <Link href="/" className="flex items-center">
+              <div className="relative mb-4 h-12 sm:h-16 w-full flex items-center justify-center">
+                <Image
+                  src="/Logo.png"
+                  alt="Logo Kivara"
+                  width={560}
+                  height={160}
+                  priority
+                  className="transition-transform duration-300 hover:scale-105"
+                  style={{
+                    objectFit: "contain",
+                    objectPosition: "center"
+                  }}
+                />
+              </div>
+            </Link>
           </div>
 
-          {/* Carrito y Login */}
+          {/* Enlaces de navegación - Desktop */}
+          <div className="hidden md:flex space-x-4 lg:space-x-8">
+            {navItems.map((item) => (
+              <button
+                key={item.value}
+                onClick={() => onSectionChange(item.value)}
+                className={`text-sm font-medium relative px-1 py-1 transition-colors duration-300 ease-in-out
+                  ${activeSection === item.value
+                    ? "text-[#9E4244]"
+                    : "text-[#4A3034] hover:text-[#9E4244]"}
+                `}
+              >
+                {item.name}
+                {activeSection === item.value && (
+                  <motion.div 
+                    layoutId="activeNavIndicator"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9E4244]"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Botones de acción (Carrito y Login) */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             {!userId ? (
               <Button
                 variant="outline"
-                className="ml-2 sm:ml-4 border-rosa-oscuro text-rosa-oscuro hover:bg-rosa-oscuro hover:text-blanco px-2 sm:px-4 py-1 sm:py-2 text-sm"
+                className="hidden sm:inline-flex border-[#9E4244] text-[#9E4244] hover:bg-[#9E4244] hover:text-white px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-full transition-colors duration-300 shadow-sm"
                 onClick={() => router.push('/login')}
               >
                 Iniciar Sesión
@@ -135,45 +157,51 @@ export function Navigation({
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 focus:outline-none"
+                  className="flex items-center space-x-1 sm:space-x-2 focus:outline-none group"
+                  aria-expanded={isUserMenuOpen}
+                  aria-haspopup="true"
                 >
                   {userAvatar ? (
-                    <Image
-                      src={userAvatar}
-                      alt="User avatar"
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                    />
+                    <div className="relative w-7 h-7 sm:w-9 sm:h-9 overflow-hidden rounded-full border-2 border-transparent transition-colors group-hover:border-[#E294A2]">
+                      <Image
+                        src={userAvatar}
+                        alt="User avatar"
+                        fill
+                        sizes="(max-width: 640px) 28px, 36px"
+                        className="object-cover"
+                      />
+                    </div>
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-gris-suave flex items-center justify-center">
-                      <span className="text-negro text-sm">
+                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-[#E294A2]/30 flex items-center justify-center transition-colors group-hover:bg-[#E294A2]/50">
+                      <span className="text-[#9E4244] text-xs sm:text-sm font-medium">
                         {userEmail?.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
-                  <ChevronDown className="h-4 w-4 text-negro" />
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-[#4A3034] transition-transform group-hover:text-[#9E4244]" />
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-blanco rounded-md shadow-lg py-1 z-50">
+                  <div
+                    className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg py-1 z-50 overflow-hidden border border-[#FBD1D8]"
+                  >
                     {isAdmin && (
                       <button
                         onClick={() => {
                           setIsUserMenuOpen(false);
                           router.push('/admin');
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-negro hover:bg-rosa-claro flex items-center"
+                        className="w-full text-left px-4 py-3 text-xs sm:text-sm text-[#4A3034] hover:bg-[#FBD1D8]/20 flex items-center transition-colors"
                       >
-                        <LayoutDashboard className="h-4 w-4 mr-2" />
+                        <LayoutDashboard className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-[#9E4244]" />
                         Panel de Admin
                       </button>
                     )}
                     <button
                       onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2 text-sm text-negro hover:bg-rosa-claro flex items-center"
+                      className="w-full text-left px-4 py-3 text-xs sm:text-sm text-[#4A3034] hover:bg-[#FBD1D8]/20 flex items-center transition-colors"
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
+                      <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-[#9E4244]" />
                       Cerrar Sesión
                     </button>
                   </div>
@@ -182,109 +210,70 @@ export function Navigation({
             )}
             <button
               onClick={onCartClick}
-              className="p-2 hover:bg-rosa-claro rounded-full relative"
+              className="relative p-1 sm:p-2 rounded-full transition-colors hover:bg-[#E294A2]/20 focus:outline-none"
+              aria-label="Ver carrito"
             >
-              <ShoppingCart className="h-6 w-6 text-negro" />
+              <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-[#4A3034]" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rosa-oscuro text-blanco text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#9E4244] text-white text-xs font-medium rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-sm">
                   {cartItemCount}
                 </span>
               )}
             </button>
-          </div>
 
-          {/* Botón de menú móvil */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 ml-2"
-          >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            {/* Botón de menú móvil */}
+            <button
+              onClick={toggleMenu}
+              className="md:hidden p-2 rounded-lg hover:bg-[#E294A2]/20 focus:outline-none"
+              aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={isMenuOpen}
             >
-              {isMenuOpen ? (
-                <path d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+              <div className="w-6 flex flex-col items-center justify-center gap-1.5">
+                <div className={`h-0.5 w-6 bg-[#4A3034] rounded-full transition-all duration-300 ${isMenuOpen ? "transform rotate-45 translate-y-2" : ""}`} />
+                <div className={`h-0.5 w-6 bg-[#4A3034] rounded-full transition-all duration-300 ${isMenuOpen ? "opacity-0" : "opacity-100"}`} />
+                <div className={`h-0.5 w-6 bg-[#4A3034] rounded-full transition-all duration-300 ${isMenuOpen ? "transform -rotate-45 -translate-y-2" : ""}`} />
+              </div>
+            </button>
+          </div>
         </div>
 
-        {/* Menú móvil */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden w-full bg-blanco shadow-lg rounded-b-lg mt-2"
-            >
-              <div className="px-2 pt-2 pb-3 space-y-1 flex flex-col">
-                <button
-                  onClick={() => {
-                    onSectionChange("dama");
-                    setIsMenuOpen(false);
-                  }}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                    activeSection === "dama"
-                      ? "bg-rosa-claro text-rosa-oscuro"
-                      : "text-negro hover:bg-rosa-claro hover:text-rosa-oscuro"
-                  }`}
-                >
-                  Dama
-                </button>
-                <button
-                  onClick={() => {
-                    onSectionChange("hombre");
-                    setIsMenuOpen(false);
-                  }}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                    activeSection === "hombre"
-                      ? "bg-rosa-claro text-rosa-oscuro"
-                      : "text-negro hover:bg-rosa-claro hover:text-rosa-oscuro"
-                  }`}
-                >
-                  Hombre
-                </button>
-                <button
-                  onClick={() => {
-                    onSectionChange("ninos");
-                    setIsMenuOpen(false);
-                  }}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                    activeSection === "ninos"
-                      ? "bg-rosa-claro text-rosa-oscuro"
-                      : "text-negro hover:bg-rosa-claro hover:text-rosa-oscuro"
-                  }`}
-                >
-                  Niños
-                </button>
-                <button
-                  onClick={() => {
-                    onSectionChange("accesorios");
-                    setIsMenuOpen(false);
-                  }}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                    activeSection === "accesorios"
-                      ? "bg-rosa-claro text-rosa-oscuro"
-                      : "text-negro hover:bg-rosa-claro hover:text-rosa-oscuro"
-                  }`}
-                >
-                  Accesorios
-                </button>
-           
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Menú móvil en un contenedor separado para no afectar al logo */}
+        <div 
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="px-2 py-3 space-y-2 flex flex-col">
+            {navItems.map((item) => (
+              <button
+                key={item.value}
+                onClick={() => {
+                  onSectionChange(item.value);
+                  setIsMenuOpen(false);
+                }}
+                className={`w-full text-left px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 ${
+                  activeSection === item.value
+                    ? "bg-[#E294A2]/30 text-[#9E4244]"
+                    : "text-[#4A3034] hover:bg-[#E294A2]/20"
+                }`}
+              >
+                {item.name}
+              </button>
+            ))}
+            {!userId && (
+              <button
+                onClick={() => {
+                  router.push('/login');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 text-[#9E4244] hover:bg-[#E294A2]/20"
+              >
+                Iniciar Sesión
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </nav>
   );
-} 
+}

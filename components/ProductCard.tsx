@@ -116,7 +116,8 @@ export function ProductCard({ product, userId, onAddToCart, onDetail }: ProductC
           />
         </div>
         <div className="p-4 bg-blanco">
-          <h3 className="text-lg font-semibold text-negro">{product.name}</h3>
+          <h2 className="text-elegant">{product.name}</h2>
+          <p className="text-body">{product.description}</p>
           <div className="mt-1 text-sm text-negro/70">
             <p>{product.category?.name}</p>
             {product.subcategory && <p>{product.subcategory.name}</p>}

@@ -98,7 +98,7 @@ export function Testimonials() {
     <section className="relative py-16 bg-gris-suave">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-negro mb-4">Lo que opinan nuestros clientes</h2>
+          <h2 className="text-3xl font-bold text-negro mb-4">Tu outfit, nuestra inspiración</h2>
           <p className="text-negro/60 max-w-2xl mx-auto">
             Nos enorgullece brindar la mejor experiencia de compra a nuestros clientes. Aquí algunos
             comentarios de personas que confían en nosotros.

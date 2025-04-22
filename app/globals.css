@@ -1,6 +1,28 @@
+/* Importación de fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --font-primary: 'Raleway', sans-serif;
+  --font-secondary: 'Lora', serif;
+}
+/* Estilos globales de tipografía */
+body {
+  font-family: var(--font-secondary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+  letter-spacing: 0.05em;
+}
 
 @keyframes fadeIn {
   from {
@@ -28,6 +50,28 @@
   --color-gris-suave: #F3F3F3;
 }
 
+/* Clase especial para el logo */
+.logo-text {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Estilos para textos especiales */
+.text-elegant {
+  font-family: var(--font-primary);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+}
+
+.text-body {
+  font-family: var(--font-secondary);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Modo oscuro */
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -35,7 +79,6 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -64,6 +107,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -90,12 +134,11 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-[#FAD4D8] text-[#000000];
   }
