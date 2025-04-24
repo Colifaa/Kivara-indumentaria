@@ -53,15 +53,13 @@ Crea un archivo .env.local con tus claves de Supabase:
 NEXT_PUBLIC_SUPABASE_URL=https://xyzcompany.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-clave-anonima
 
-📁 Estructura sugerida
-/
-├── app/                  # App Router (páginas, layouts, etc.)
-├── components/           # Componentes UI reutilizables
-├── lib/                  # Funciones utilitarias
-├── public/               # Archivos estáticos (imágenes, logos, etc.)
-├── styles/               # Tailwind y estilos globales
-├── types/                # Tipos y modelos
-├── .env.local            # Variables de entorno
+🧑‍💻 Desarrollador
+Mathez Jorge Alí
+
+🌐 Portafolio: https://portfolioo-eta-three.vercel.app/
+💼 LinkedIn: https://www.linkedin.com/in/jorge-mathez-598597260/
+🐱 GitHub: https://github.com/Colifaa
+📧 Email: Jorgemathez14@gmail.com
 
 
 
