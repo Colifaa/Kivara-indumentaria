@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Product } from '@/types/product';
 
 interface Category {
   id: number;
@@ -24,32 +25,16 @@ interface SubSubcategory {
   subcategory_id: number;
 }
 
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string | string[];
-  category_id: number;
-  subcategory_id: number;
-  sub_subcategory_id: number;
-  stock: number;
-  talla: string;
-  category: Category;
-  subcategory: Subcategory;
-  sub_subcategory: SubSubcategory;
-}
-
 interface ProductDetailProps {
   product: Product;
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product) => void;
-  userId?: string;
-  onNext?: () => void;
-  onPrev?: () => void;
-  hasNext?: boolean;
-  hasPrev?: boolean;
+  userId: string | undefined;
+  onNext: () => void;
+  onPrev: () => void;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
 export function ProductDetail({
