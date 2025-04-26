@@ -53,7 +53,7 @@ export function ParticlesBackground() {
             shape: {
               type: "char",
               character: {
-                value: ["❤", "⭐"],
+                value: ["❤" ,"🖤"],
                 font: "Verdana",
                 style: "",
                 weight: "900",
@@ -67,7 +67,7 @@ export function ParticlesBackground() {
               color: {
                 value: {
                   "❤": "#BB6A8C",
-                  "⭐": "#000000"
+                  "🖤":"#B6AEAA",
                 }
               }
             }

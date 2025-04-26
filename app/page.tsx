@@ -5,7 +5,6 @@ import { ArrowRight, RefreshCw, Check, Filter } from "lucide-react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Navigation } from "@/components/Navigation";
 import { SearchBar } from "@/components/SearchBar";
-import { ProductCard } from "@/components/ProductCard";
 import { Cart } from "@/components/Cart";
 import { ShoppingCart, Heart, ChevronLeft, ChevronRight, X, Tag, Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -1135,7 +1134,7 @@ export default function Home() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: idx * 0.05 }}
-                      className="group relative bg-blanco rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300"
+                      className="group relative bg-pink-300 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300"
                     >
                       <div 
                         className="relative aspect-square overflow-hidden cursor-pointer"
