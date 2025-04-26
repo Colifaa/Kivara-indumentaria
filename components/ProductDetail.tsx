@@ -113,7 +113,7 @@ export function ProductDetail({
           <ChevronRight className="h-6 w-6 text-negro" />
         </button>
       )}
-      <div className="bg-blanco rounded-lg max-w-6xl w-full max-h-[95vh] overflow-y-auto relative">
+      <div className="bg-pink-200 rounded-lg max-w-6xl w-full max-h-[95vh] overflow-y-auto relative">
         <div className="p-6 md:p-8">
           <div className="flex justify-between items-start mb-6">
             <h2 className="text-2xl font-bold text-negro">{product.name}</h2>
