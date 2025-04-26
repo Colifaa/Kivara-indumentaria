@@ -52,7 +52,7 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
   // Estado para manejar múltiples imágenes
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>(
-    Array.isArray(product?.image_url) ? product.image_url : []
+    product && Array.isArray(product.image_url) ? product.image_url : []
   );
 
   const [selectedSubSubcategoryId, setSelectedSubSubcategoryId] = useState<number | null>(null);
