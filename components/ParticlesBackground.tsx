@@ -28,7 +28,7 @@ export function ParticlesBackground() {
           fpsLimit: 60,
           particles: {
             color: {
-              value: ["#BB6A8C", "#000000", "#FFFFFF"],
+              value: "#BB6A8C",
             },
             move: {
               enable: true,
@@ -41,21 +41,36 @@ export function ParticlesBackground() {
               },
             },
             number: {
-              value: 50,
+              value: 20,
               density: {
                 enable: true,
                 value_area: 800,
               },
             },
             opacity: {
-              value: { min: 0.3, max: 0.7 },
+              value: { min: 0.5, max: 1 },
             },
             shape: {
-              type: ["circle", "square"],
+              type: "char",
+              character: {
+                value: ["❤", "⭐"],
+                font: "Verdana",
+                style: "",
+                weight: "900",
+                fill: true
+              }
             },
             size: {
-              value: { min: 2, max: 6 },
+              value: { min: 8, max: 12 },
             },
+            custom: {
+              color: {
+                value: {
+                  "❤": "#BB6A8C",
+                  "⭐": "#000000"
+                }
+              }
+            }
           },
           detectRetina: true,
         }}

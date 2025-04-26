@@ -1,20 +1,17 @@
 export interface Category {
   id: number;
   name: string;
-  slug: string;
 }
 
 export interface Subcategory {
   id: number;
   name: string;
-  slug: string;
   category_id: number;
 }
 
 export interface SubSubcategory {
   id: number;
   name: string;
-  slug: string;
   subcategory_id: number;
 }
 
@@ -24,12 +21,13 @@ export interface Product {
   description: string;
   price: number;
   image_url: string | string[];
-  category_id: number;
-  subcategory_id: number;
-  sub_subcategory_id: number;
+  category: Category | null;
+  subcategory: Subcategory | null;
+  sub_subcategory: SubSubcategory | null;
+  sub_subcategory_id: number | null;
+  category_id: number | null;
+  subcategory_id: number | null;
   stock: number;
   talla: string;
-  category: Category;
-  subcategory: Subcategory;
-  sub_subcategory: SubSubcategory;
+  created_at?: string;
 } 

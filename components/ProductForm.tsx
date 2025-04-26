@@ -3,19 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { X, Plus } from "lucide-react";
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  description: string;
-  image_url: string[];
-  stock: number;
-  category_id: number;
-  subcategory_id: number;
-  sub_subcategory_id: number | null;
-  created_at: string;
-}
+import { Product } from "../types/product";
 
 interface Category {
   id: number;
@@ -64,7 +52,7 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
   // Estado para manejar múltiples imágenes
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>(
-    product?.image_url || []
+    Array.isArray(product?.image_url) ? product.image_url : []
   );
 
   const [selectedSubSubcategoryId, setSelectedSubSubcategoryId] = useState<number | null>(null);
@@ -280,6 +268,7 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
         subcategory_id: subcategoryId,
         sub_subcategory_id: subSubcategoryId,
         stock: parseInt(formData.get("stock") as string),
+        talla: formData.get("talla") as string,
       };
 
       console.log('Datos del producto a guardar:', productData);
@@ -524,271 +513,310 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">
+          <div className="flex justify-between items-center mb-6 border-b pb-4">
+            <h2 className="text-2xl font-bold text-rosa-oscuro">
               {product ? "Editar Producto" : "Nuevo Producto"}
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-rosa-oscuro hover:text-rosa-claro transition-colors"
             >
               <X className="h-6 w-6" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  defaultValue={product?.name}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Precio
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  step="1"
-                  min="0"
-                  value={priceInput}
-                  onChange={e => setPriceInput(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
-                {priceInput && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    {formattedPrice}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Descripción
-                </label>
-                <textarea
-                  name="description"
-                  defaultValue={product?.description}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={3}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Stock
-                </label>
-                <input
-                  type="number"
-                  name="stock"
-                  min="0"
-                  defaultValue={product?.stock}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Categoría
-                </label>
-                <select
-                  name="category_id"
-                  value={selectedCategoryId || ""}
-                  onChange={(e) => {
-                    setSelectedCategoryId(parseInt(e.target.value));
-                    setSelectedSubcategoryId(null);
-                  }}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Selecciona una categoría</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Subcategoría
-                </label>
-                <div className="mt-1 space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <select
-                      name="subcategory_id"
-                      value={selectedSubcategoryId || ""}
-                      onChange={(e) => setSelectedSubcategoryId(parseInt(e.target.value))}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      required
-                      disabled={!selectedCategoryId}
-                    >
-                      <option value="">Selecciona una subcategoría</option>
-                      {filteredSubcategories.map((subcategory) => (
-                        <option key={subcategory.id} value={subcategory.id}>
-                          {subcategory.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewSubcategoryForm(!showNewSubcategoryForm)}
-                      className="p-2 text-blue-600 hover:text-blue-700"
-                      disabled={!selectedCategoryId}
-                    >
-                      <Plus className="h-5 w-5" />
-                    </button>
-                  </div>
-                  
-                  {showNewSubcategoryForm && (
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        value={newSubcategoryName}
-                        onChange={(e) => setNewSubcategoryName(e.target.value)}
-                        placeholder="Nombre de la nueva subcategoría"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={createNewSubcategory}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        disabled={isLoading}
-                      >
-                        Crear
-                      </button>
-                    </div>
-                  )}
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Información básica del producto */}
+            <div className="bg-gris-suave p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-negro mb-4">Información Básica</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-negro mb-1">
+                    Nombre del Producto
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={product?.name}
+                    className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                    required
+                  />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Sub-subcategoría
-                </label>
-                <div className="mt-1 space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <select
-                      name="sub_subcategory_id"
-                      value={selectedSubSubcategoryId || ""}
-                      onChange={(e) => setSelectedSubSubcategoryId(parseInt(e.target.value))}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      disabled={!selectedSubcategoryId}
-                    >
-                      <option value="">Selecciona una sub-subcategoría (opcional)</option>
-                      {filteredSubSubcategories.map((subSubcategory) => (
-                        <option key={subSubcategory.id} value={subSubcategory.id}>
-                          {subSubcategory.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewSubSubcategoryForm(!showNewSubSubcategoryForm)}
-                      className="p-2 text-blue-600 hover:text-blue-700"
-                      disabled={!selectedSubcategoryId}
-                    >
-                      <Plus className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {showNewSubSubcategoryForm && (
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        value={newSubSubcategoryName}
-                        onChange={(e) => setNewSubSubcategoryName(e.target.value)}
-                        placeholder="Nombre de la nueva sub-subcategoría"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={createNewSubSubcategory}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        disabled={isLoading}
-                      >
-                        Crear
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Imágenes
-                </label>
-                <div className="mt-1 space-y-4">
-                  <div className="flex items-center space-x-4">
+                <div>
+                  <label className="block text-sm font-medium text-negro mb-1">
+                    Precio
+                  </label>
+                  <div className="relative">
                     <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                      id="image-upload"
-                      multiple
+                      type="number"
+                      name="price"
+                      step="1"
+                      min="0"
+                      value={priceInput}
+                      onChange={e => setPriceInput(e.target.value)}
+                      className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                      required
                     />
-                    <label
-                      htmlFor="image-upload"
-                      className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      Seleccionar Imágenes
-                    </label>
+                    {priceInput && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-rosa-oscuro">
+                        {formattedPrice}
+                      </div>
+                    )}
                   </div>
-                  
-                  {imagePreviews.length > 0 && (
-                    <div className="grid grid-cols-4 gap-4">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={preview}
-                            alt={`Preview ${index + 1}`}
-                            className="h-24 w-24 object-cover rounded-md"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-full transform translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-negro mb-1">
+                    Descripción
+                  </label>
+                  <textarea
+                    name="description"
+                    defaultValue={product?.description}
+                    className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                    rows={3}
+                    required
+                  />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end space-x-4">
+            {/* Categorización y Stock */}
+            <div className="bg-gris-suave p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-negro mb-4">Categorización y Stock</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-negro mb-1">
+                    Categoría
+                  </label>
+                  <select
+                    name="category_id"
+                    value={selectedCategoryId || ""}
+                    onChange={(e) => {
+                      setSelectedCategoryId(parseInt(e.target.value));
+                      setSelectedSubcategoryId(null);
+                    }}
+                    className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                    required
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-negro mb-1">
+                    Subcategoría
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <select
+                        name="subcategory_id"
+                        value={selectedSubcategoryId || ""}
+                        onChange={(e) => setSelectedSubcategoryId(parseInt(e.target.value))}
+                        className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                        required
+                        disabled={!selectedCategoryId}
+                      >
+                        <option value="">Selecciona una subcategoría</option>
+                        {filteredSubcategories.map((subcategory) => (
+                          <option key={subcategory.id} value={subcategory.id}>
+                            {subcategory.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewSubcategoryForm(!showNewSubcategoryForm)}
+                        className="p-2 text-rosa-oscuro hover:text-rosa-claro transition-colors"
+                        disabled={!selectedCategoryId}
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                    
+                    {showNewSubcategoryForm && (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={newSubcategoryName}
+                          onChange={(e) => setNewSubcategoryName(e.target.value)}
+                          placeholder="Nombre de la nueva subcategoría"
+                          className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                        />
+                        <button
+                          type="button"
+                          onClick={createNewSubcategory}
+                          className="px-4 py-2 bg-rosa-oscuro text-blanco rounded-md hover:bg-rosa-claro hover:text-negro transition-colors"
+                          disabled={isLoading}
+                        >
+                          Crear
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-negro mb-1">
+                    Sub-subcategoría
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <select
+                        name="sub_subcategory_id"
+                        value={selectedSubSubcategoryId || ""}
+                        onChange={(e) => setSelectedSubSubcategoryId(parseInt(e.target.value))}
+                        className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                        disabled={!selectedSubcategoryId}
+                      >
+                        <option value="">Selecciona una sub-subcategoría (opcional)</option>
+                        {filteredSubSubcategories.map((subSubcategory) => (
+                          <option key={subSubcategory.id} value={subSubcategory.id}>
+                            {subSubcategory.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewSubSubcategoryForm(!showNewSubSubcategoryForm)}
+                        className="p-2 text-rosa-oscuro hover:text-rosa-claro transition-colors"
+                        disabled={!selectedSubcategoryId}
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    {showNewSubSubcategoryForm && (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={newSubSubcategoryName}
+                          onChange={(e) => setNewSubSubcategoryName(e.target.value)}
+                          placeholder="Nombre de la nueva sub-subcategoría"
+                          className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                        />
+                        <button
+                          type="button"
+                          onClick={createNewSubSubcategory}
+                          className="px-4 py-2 bg-rosa-oscuro text-blanco rounded-md hover:bg-rosa-claro hover:text-negro transition-colors"
+                          disabled={isLoading}
+                        >
+                          Crear
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-negro mb-1">
+                    Stock
+                  </label>
+                  <input
+                    type="number"
+                    name="stock"
+                    min="0"
+                    defaultValue={product?.stock}
+                    className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-negro mb-1">
+                    Talla
+                  </label>
+                  <input
+                    type="text"
+                    name="talla"
+                    defaultValue={product?.talla}
+                    placeholder="Ej: XL, L, M, S, 100, etc."
+                    className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Imágenes */}
+            <div className="bg-gris-suave p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-negro mb-4">Imágenes del Producto</h3>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="image-upload"
+                    multiple
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer px-6 py-2 bg-rosa-oscuro text-blanco rounded-md hover:bg-rosa-claro hover:text-negro transition-colors flex items-center space-x-2"
+                  >
+                    <Plus className="h-5 w-5" />
+                    <span>Agregar Imágenes</span>
+                  </label>
+                  <span className="text-sm text-negro">
+                    Máximo 5MB por imagen
+                  </span>
+                </div>
+                
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <div className="aspect-square rounded-lg overflow-hidden">
+                          <img
+                            src={preview}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 p-1 bg-rosa-oscuro text-blanco rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex justify-end space-x-4 pt-4 border-t">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-6 py-2 text-negro bg-gris-suave rounded-md hover:bg-gris-medio transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="px-6 py-2 bg-rosa-oscuro text-blanco rounded-md hover:bg-rosa-claro hover:text-negro transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
-                {isLoading ? "Guardando..." : "Guardar"}
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-blanco border-t-transparent"></div>
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <span>Guardar Producto</span>
+                )}
               </button>
             </div>
           </form>

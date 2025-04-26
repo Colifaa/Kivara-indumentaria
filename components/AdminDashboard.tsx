@@ -5,22 +5,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { ProductForm } from "./ProductForm";
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image_url: string[];
-  category_id: number;
-  subcategory_id: number;
-  sub_subcategory_id: number | null;
-  description: string;
-  stock: number;
-  category?: string;
-  subcategory?: string;
-  sub_subcategory?: string;
-  created_at: string;
-}
+import { Product } from "../types/product";
 
 interface Category {
   id: number;
@@ -114,7 +99,7 @@ export function AdminDashboard() {
           category: product.categories?.name,
           subcategory: product.subcategories?.name,
           sub_subcategory: product.sub_subcategories?.name
-        }));
+        })) as Product[];
         setProducts(formattedProducts);
         setFilteredProducts(formattedProducts);
         setTotalPages(Math.ceil(formattedProducts.length / itemsPerPage));
@@ -227,10 +212,10 @@ export function AdminDashboard() {
             if (updatedProduct) {
               // Actualizamos el producto en el estado
               setProducts(prevProducts => 
-                prevProducts.map(p => p.id === updatedProduct.id ? updatedProduct : p)
+                prevProducts.map(p => p.id === updatedProduct.id ? {...updatedProduct} : p)
               );
               setFilteredProducts(prevFiltered => 
-                prevFiltered.map(p => p.id === updatedProduct.id ? updatedProduct : p)
+                prevFiltered.map(p => p.id === updatedProduct.id ? {...updatedProduct} : p)
               );
             }
           }}
@@ -261,6 +246,9 @@ export function AdminDashboard() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-negro">
                     Stock: {product.stock}
+                  </span>
+                  <span className="text-sm text-negro">
+                    Talla: {product.talla}
                   </span>
                   <div className="flex space-x-2">
                     <button

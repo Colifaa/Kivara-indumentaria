@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowRight, RefreshCw } from "lucide-react";
+import { ArrowRight, RefreshCw, Check, Filter } from "lucide-react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Navigation } from "@/components/Navigation";
 import { SearchBar } from "@/components/SearchBar";
 import { ProductCard } from "@/components/ProductCard";
 import { Cart } from "@/components/Cart";
-import { ShoppingCart, Heart, ChevronLeft, ChevronRight, X, Tag, Layers, Filter } from "lucide-react";
+import { ShoppingCart, Heart, ChevronLeft, ChevronRight, X, Tag, Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Carousel } from "@/components/Carousel";
 import { Product, Category, Subcategory, SubSubcategory } from '@/types/product';
@@ -207,8 +207,8 @@ export default function Home() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(query) ||
-        product.category?.name?.toLowerCase().includes(query) ||
-        product.subcategory?.name?.toLowerCase().includes(query)
+        (product.category?.name || '').toLowerCase().includes(query) ||
+        (product.subcategory?.name || '').toLowerCase().includes(query)
       );
     }
 
@@ -236,7 +236,6 @@ export default function Home() {
     sectionProducts = sectionProducts.filter(product => {
       return product.category?.name === sectionToCategory[section];
     });
-    console.log(`Productos después de filtrar por sección ${section}:`, sectionProducts.length);
 
     // Aplicar filtros adicionales si existen
     const sectionFilters = filters[section];
@@ -247,7 +246,6 @@ export default function Home() {
         sectionProducts = sectionProducts.filter(product => 
           product.category?.name === sectionFilters.category
         );
-        console.log(`Productos después de filtrar por categoría ${sectionFilters.category}:`, sectionProducts.length);
       }
       
       // Filtro por subcategoría
@@ -255,7 +253,6 @@ export default function Home() {
         sectionProducts = sectionProducts.filter(product => 
           product.subcategory?.name === sectionFilters.subcategory
         );
-        console.log(`Productos después de filtrar por subcategoría ${sectionFilters.subcategory}:`, sectionProducts.length);
       }
       
       // Filtro por sub-subcategoría
@@ -263,7 +260,6 @@ export default function Home() {
         sectionProducts = sectionProducts.filter(product => 
           product.sub_subcategory?.name === sectionFilters.subSubcategory
         );
-        console.log(`Productos después de filtrar por sub-subcategoría ${sectionFilters.subSubcategory}:`, sectionProducts.length);
       }
     }
 
@@ -420,7 +416,6 @@ export default function Home() {
   };
 
   const getSubcategoriesForSection = (section: string) => {
-    // Mapear secciones a nombres de categorías
     const sectionToCategory: Record<string, string> = {
       "dama": "Damas",
       "hombre": "Hombres",
@@ -441,17 +436,15 @@ export default function Home() {
     }
 
     // Obtener subcategorías únicas que pertenezcan a esta categoría
-    const uniqueSubcategoriesMap = new Map();
+    const uniqueSubcategoriesMap = new Map<number, Subcategory>();
     
     categoryProducts.forEach(product => {
-      if (product.subcategory && product.subcategory.category_id === product.category?.id) {
+      if (product.subcategory && product.category) {
         uniqueSubcategoriesMap.set(product.subcategory.id, product.subcategory);
       }
     });
 
-    const subcategories = Array.from(uniqueSubcategoriesMap.values());
-    console.log(`Subcategorías para sección ${section}:`, subcategories);
-    return subcategories;
+    return Array.from(uniqueSubcategoriesMap.values());
   };
 
   const getUniqueSubcategories = (section: string, category: string) => {
@@ -498,7 +491,7 @@ export default function Home() {
 
   const handleCategoryClick = (category: string, section: string) => {
     // Si ya está seleccionada, solo cerramos el menú
-    if (filters[section].category === category) {
+    if (tempFilters[section].category === category) {
       setShowFilterPanel(prev => ({
         ...prev,
         [section]: false
@@ -506,8 +499,8 @@ export default function Home() {
       return;
     }
     
-    // Si es una nueva categoría, actualizamos el filtro y abrimos el menú
-    setFilters(prev => ({
+    // Si es una nueva categoría, actualizamos el filtro temporal y abrimos el menú
+    setTempFilters(prev => ({
       ...prev,
       [section]: {
         category: category,
@@ -520,17 +513,11 @@ export default function Home() {
       ...prev,
       [section]: true
     }));
-    
-    // Reiniciar la página cuando se cambia el filtro
-    setCurrentPage(prev => ({
-      ...prev,
-      [section]: 1
-    }));
   };
 
   const handleSubcategoryClick = (subcategory: string, section: string) => {
     // Si ya está seleccionada, solo cerramos el menú
-    if (filters[section].subcategory === subcategory) {
+    if (tempFilters[section].subcategory === subcategory) {
       setShowFilterPanel(prev => ({
         ...prev,
         [section]: false
@@ -538,8 +525,8 @@ export default function Home() {
       return;
     }
     
-    // Si es una nueva subcategoría, actualizamos el filtro y abrimos el menú
-    setFilters(prev => ({
+    // Si es una nueva subcategoría, actualizamos el filtro temporal y abrimos el menú
+    setTempFilters(prev => ({
       ...prev,
       [section]: {
         ...prev[section],
@@ -552,17 +539,11 @@ export default function Home() {
       ...prev,
       [section]: true
     }));
-    
-    // Reiniciar la página cuando se cambia el filtro
-    setCurrentPage(prev => ({
-      ...prev,
-      [section]: 1
-    }));
   };
 
   const handleSubSubcategoryClick = (subSubcategory: string, section: string) => {
-    // Actualizamos el filtro y cerramos el menú
-    setFilters(prev => ({
+    // Actualizamos el filtro temporal pero NO cerramos el menú
+    setTempFilters(prev => ({
       ...prev,
       [section]: {
         ...prev[section],
@@ -570,16 +551,7 @@ export default function Home() {
       }
     }));
     
-    setShowFilterPanel(prev => ({
-      ...prev,
-      [section]: false
-    }));
-    
-    // Reiniciar la página cuando se cambia el filtro
-    setCurrentPage(prev => ({
-      ...prev,
-      [section]: 1
-    }));
+    // Ya no cerramos el panel aquí para permitir que el usuario haga clic en "Aplicar Filtros"
   };
 
   const loadCartItems = async () => {
@@ -683,6 +655,7 @@ export default function Home() {
 
   // Función para aplicar los filtros
   const applyFilters = (section: string) => {
+    // Aplicar los filtros temporales a los filtros permanentes
     setFilters(prev => ({
       ...prev,
       [section]: { ...tempFilters[section] }
@@ -699,6 +672,50 @@ export default function Home() {
       ...prev,
       [section]: false
     }));
+    
+    // Filtrar los productos inmediatamente usando los filtros temporales
+    let sectionProducts = [...products];
+    
+    // Mapear secciones a nombres de categorías
+    const sectionToCategory: Record<string, string> = {
+      "dama": "Damas",
+      "hombre": "Hombres",
+      "ninos": "Niños",
+      "accesorios": "Accesorios"
+    };
+
+    // Filtrar por sección (categoría principal)
+    sectionProducts = sectionProducts.filter(product => {
+      return product.category?.name === sectionToCategory[section];
+    });
+
+    // Aplicar filtros adicionales si existen
+    const sectionFilters = tempFilters[section];
+    
+    if (sectionFilters) {
+      // Filtro por categoría
+      if (sectionFilters.category) {
+        sectionProducts = sectionProducts.filter(product => 
+          product.category?.name === sectionFilters.category
+        );
+      }
+      
+      // Filtro por subcategoría
+      if (sectionFilters.subcategory) {
+        sectionProducts = sectionProducts.filter(product => 
+          product.subcategory?.name === sectionFilters.subcategory
+        );
+      }
+      
+      // Filtro por sub-subcategoría
+      if (sectionFilters.subSubcategory) {
+        sectionProducts = sectionProducts.filter(product => 
+          product.sub_subcategory?.name === sectionFilters.subSubcategory
+        );
+      }
+    }
+
+    setFilteredProducts(sectionProducts);
   };
   
   // Función para resetear los filtros
@@ -923,10 +940,10 @@ export default function Home() {
       {/* Botón para mostrar/ocultar el panel de filtros */}
       <button
         onClick={() => toggleFilterPanel(section)}
-        className="px-4 py-2 bg-blanco/20 backdrop-blur-sm border border-blanco/30 text-blanco rounded-full hover:bg-rosa-oscuro hover:border-rosa-oscuro transition-colors flex items-center gap-2"
+        className="px-5 py-2.5 bg-rosa-oscuro/80 backdrop-blur-sm border border-rosa-claro/50 text-blanco rounded-full hover:bg-rosa-oscuro hover:border-rosa-claro transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
       >
-        <Filter className="h-4 w-4" />
-        {showFilterPanel[section] ? "Ocultar Filtros" : "Filtrar"}
+        <Filter className="h-5 w-5" />
+        <span className="font-medium">{showFilterPanel[section] ? "Ocultar Filtros" : "Filtrar"}</span>
       </button>
     </div>
     
@@ -1025,7 +1042,7 @@ export default function Home() {
                                     key={category}
                                     onClick={() => handleCategoryClick(category, section)}
                                     className={`px-4 py-3 rounded-xl transition-all duration-200 border ${
-                                      filters[section].category === category
+                                      tempFilters[section].category === category
                                         ? 'bg-rosa-oscuro text-blanco border-rosa-oscuro'
                                         : 'bg-white text-negro border-gris-suave hover:border-rosa-claro'
                                     }`}
@@ -1037,19 +1054,19 @@ export default function Home() {
                             </div>
   
                             {/* Subcategorías */}
-                            {filters[section].category && (
+                            {tempFilters[section].category && (
                               <div className="space-y-4">
                                 <h4 className="text-lg font-medium text-negro flex items-center">
                                   <Layers className="h-5 w-5 mr-2 text-rosa-oscuro" />
                                   Subcategorías
                                 </h4>
                                 <div className="grid grid-cols-2 gap-3">
-                                  {getUniqueSubcategories(section, filters[section].category!).map((subcategory) => (
+                                  {getUniqueSubcategories(section, tempFilters[section].category!).map((subcategory) => (
                                     <button
                                       key={subcategory}
                                       onClick={() => handleSubcategoryClick(subcategory, section)}
                                       className={`px-4 py-3 rounded-xl transition-all duration-200 border ${
-                                        filters[section].subcategory === subcategory
+                                        tempFilters[section].subcategory === subcategory
                                           ? 'bg-rosa-oscuro text-blanco border-rosa-oscuro'
                                           : 'bg-white text-negro border-gris-suave hover:border-rosa-claro'
                                       }`}
@@ -1062,19 +1079,19 @@ export default function Home() {
                             )}
   
                             {/* Sub-subcategorías */}
-                            {filters[section].subcategory && (
+                            {tempFilters[section].subcategory && (
                               <div className="space-y-4">
                                 <h4 className="text-lg font-medium text-negro flex items-center">
                                   <Filter className="h-5 w-5 mr-2 text-rosa-oscuro" />
                                   Tipos
                                 </h4>
                                 <div className="grid grid-cols-2 gap-3">
-                                  {getUniqueSubSubcategories(section, filters[section].subcategory!).map((subSubcategory) => (
+                                  {getUniqueSubSubcategories(section, tempFilters[section].subcategory!).map((subSubcategory) => (
                                     <button
                                       key={subSubcategory}
                                       onClick={() => handleSubSubcategoryClick(subSubcategory, section)}
                                       className={`px-4 py-3 rounded-xl transition-all duration-200 border ${
-                                        filters[section].subSubcategory === subSubcategory
+                                        tempFilters[section].subSubcategory === subSubcategory
                                           ? 'bg-rosa-oscuro text-blanco border-rosa-oscuro'
                                           : 'bg-white text-negro border-gris-suave hover:border-rosa-claro'
                                       }`}
@@ -1089,7 +1106,14 @@ export default function Home() {
                         </div>
   
                         {/* Footer */}
-                        <div className="p-6 border-t border-gris-suave">
+                        <div className="p-6 border-t border-gris-suave space-y-3">
+                          <button
+                            onClick={() => applyFilters(section)}
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium bg-rosa-oscuro text-blanco hover:bg-rosa-claro hover:text-rosa-oscuro transition-colors shadow-md"
+                          >
+                            <Check className="h-4 w-4" />
+                            Aplicar Filtros
+                          </button>
                           <button
                             onClick={() => resetFilters(section)}
                             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium border border-gris-suave text-negro hover:bg-gris-suave/10 transition-colors"
