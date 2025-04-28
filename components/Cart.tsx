@@ -149,7 +149,7 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
                 <div key={item.id} className="flex items-center justify-between border-b pb-4">
                   <div className="flex items-center space-x-4">
                     <img
-                      src={item.product.image_url}
+                      src={item.product.image_url[0]}
                       alt={item.product.name}
                       className="w-20 h-20 object-cover rounded"
                     />
