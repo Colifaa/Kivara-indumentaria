@@ -37,18 +37,17 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
 
   useEffect(() => {
     if (isOpen && userId) {
-      console.log("Cart abierto, cargando items...");
-      console.log("UserId:", userId);
+     
       loadCartItems();
     }
   }, [isOpen, userId]);
 
   useEffect(() => {
-    console.log("Carrito actualizado:", cartItems);
+  
   }, [cartItems]);
 
   const loadCartItems = async () => {
-    console.log("Cargando items del carrito para usuario:", userId);
+   
   
     const { data, error } = await supabase
       .from("cart_items")
@@ -65,8 +64,7 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
       `)
       .eq("user_id", userId);
   
-    console.log("Datos recibidos:", data);
-    console.log("Error si existe:", error);
+ 
   
     if (error) {
       console.error("Error al cargar el carrito:", error);
@@ -76,7 +74,6 @@ export function Cart({ isOpen, onClose, userId, onUpdateCartCount }: CartProps) 
     }
   
     if (data && !error) {
-      console.log("Datos del carrito:", data);
       const items = data as CartItem[];
       setCartItems(items);
       calculateTotal(items);

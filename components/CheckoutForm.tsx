@@ -156,7 +156,7 @@ export function CheckoutForm({ onClose, total, cartItems }: CheckoutFormProps) {
                   required
                 >
                   <option value="" className="bg-rosa-oscuro">Selecciona un método de pago</option>
-                  <option value="Tarjeta" className="bg-rosa-oscuro">Tarjeta de Crédito/Débito</option>
+                  <option value="Mercado Pago" className="bg-rosa-oscuro">Mercado Pago</option>
                   <option value="Transferencia" className="bg-rosa-oscuro">Transferencia Bancaria</option>
                   <option value="Efectivo" className="bg-rosa-oscuro">Efectivo</option>
                 </select>

@@ -189,7 +189,7 @@ export default function Home() {
       }
 
       if (productsData) {
-        console.log('Productos cargados:', productsData);
+    
         setProducts(productsData);
         setFilteredProducts(productsData);
       }
@@ -221,7 +221,7 @@ export default function Home() {
 
   const getFilteredProductsForSection = (section: string) => {
     let sectionProducts = [...products];
-    console.log('Productos iniciales:', sectionProducts.length);
+  
 
     // Mapear secciones a nombres de categorías
     const sectionToCategory: Record<string, string> = {
@@ -267,9 +267,9 @@ export default function Home() {
 
   // Asegurarnos de que los productos se filtren cuando cambien los filtros
   useEffect(() => {
-    console.log('Filtros actualizados:', filters);
+  
     const filtered = getFilteredProductsForSection(activeSection);
-    console.log('Productos filtrados después de actualizar filtros:', filtered.length);
+  
     setFilteredProducts(filtered);
   }, [filters, activeSection]);
 
@@ -430,7 +430,7 @@ export default function Home() {
     );
     
     if (categoryProducts.length === 0) {
-      console.log(`No se encontraron productos para la categoría ${categoryName}`);
+    
       return [];
     }
 
@@ -574,7 +574,7 @@ export default function Home() {
     }
 
     try {
-      console.log('Agregando producto al carrito:', product);
+    
       
       const { data: existingItem, error: searchError } = await supabase
         .from("cart_items")
@@ -589,7 +589,7 @@ export default function Home() {
 
       let error;
       if (existingItem) {
-        console.log('Producto existente, actualizando cantidad:', existingItem);
+       
         const { error: updateError } = await supabase
           .from("cart_items")
           .update({ quantity: existingItem.quantity + 1 })
@@ -597,7 +597,7 @@ export default function Home() {
           .eq("product_id", product.id);
         error = updateError;
       } else {
-        console.log('Nuevo producto, insertando en el carrito');
+       
         const { error: insertError } = await supabase
           .from("cart_items")
           .insert([{ 
@@ -610,7 +610,7 @@ export default function Home() {
 
       if (error) throw error;
       
-      console.log('Producto agregado exitosamente');
+     
       
       // Actualizamos el contador y recargamos los items del carrito
       await loadCartItems();
