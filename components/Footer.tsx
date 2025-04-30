@@ -28,10 +28,10 @@ export function Footer() {
               Somos tu destino de moda favorito, ofreciendo las últimas tendencias en ropa y accesorios para toda la familia.
             </p>
             
-            <h3 className="text-xl font-bold mr-32 mb-6">Síguenos</h3>
+            <h3 className="text-xl font-bold mr-44 mb-6">Síguenos</h3>
             <div className="flex space-x-6 mr-28">
               <motion.a
-                href="https://facebook.com"
+                href="https://www.facebook.com/share/14HGgAX8GN/"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.1 }}
@@ -40,7 +40,7 @@ export function Footer() {
                 <Facebook size={24} />
               </motion.a>
               <motion.a
-                href="https://instagram.com"
+                href="https://www.instagram.com/kivara.ind?igsh=MW9ocnlzbng1N2t4MQ=="
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.1 }}
@@ -62,7 +62,7 @@ export function Footer() {
 
           {/* Columna derecha - Contacto */}
           <div className="flex flex-col items-center md:items-end">
-            <h3 className="text-xl font-bold items-center mr-32 mb-6">Contacto</h3>
+            <h3 className="text-xl font-bold items-center mr-44 mb-6">Contacto</h3>
             <ul className="space-y-4">
               <li className="flex items-center space-x-3">
                 <Phone size={20} className="text-rosa-claro flex-shrink-0" />
@@ -71,21 +71,29 @@ export function Footer() {
               <li className="flex items-center space-x-3">
                 <Mail size={20} className="text-rosa-claro flex-shrink-0" />
                 <a href="mailto:info@inndumentaria.com" className="text-blanco/80 hover:text-rosa-claro transition-colors">
-                  info@inndumentaria.com
+                kivara.indumentaria1@gmail.com
                 </a>
               </li>
               <li className="flex items-center space-x-3">
                 <MapPin size={20} className="text-rosa-claro flex-shrink-0" />
-                <span className="text-blanco/80">San Rafael, Mendoza</span>
+                <span className="text-blanco/80">Salta, Argentina</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-blanco/10">
-          <p className="text-center text-blanco/60">
-            © {new Date().getFullYear()} Inndumentaria. Todos los derechos reservados.
-          </p>
+        <p className="text-center text-blanco/60 text-sm">
+  © {new Date().getFullYear()} -{" "}
+  <a
+    href="https://portfolioo-eta-three.vercel.app/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="underline hover:text-blanco/80 transition"
+  >
+   Kivara. Todos los derechos reservados.
+  </a>
+</p>
         </div>
       </div>
     </footer>
