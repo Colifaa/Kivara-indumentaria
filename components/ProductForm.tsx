@@ -68,6 +68,9 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
     return value.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
   }, [priceInput]);
 
+  const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
   useEffect(() => {
     loadCategories();
     if (product) {
@@ -511,6 +514,31 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
     }
   };
 
+  const createNewCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      setIsLoading(true);
+      const slug = generateUniqueSlug(newCategoryName);
+      const { data: newCategory, error } = await supabase
+        .from("categories")
+        .insert([{ name: newCategoryName, slug }])
+        .select()
+        .single();
+      if (error) throw error;
+      if (newCategory) {
+        setCategories([...categories, newCategory]);
+        setSelectedCategoryId(newCategory.id);
+        setNewCategoryName("");
+        setShowNewCategoryForm(false);
+      }
+    } catch (error) {
+      console.error("Error al crear categoría:", error);
+      alert("Error al crear la categoría principal");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -591,23 +619,53 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
                   <label className="block text-sm font-medium text-negro mb-1">
                     Categoría
                   </label>
-                  <select
-                    name="category_id"
-                    value={selectedCategoryId || ""}
-                    onChange={(e) => {
-                      setSelectedCategoryId(parseInt(e.target.value));
-                      setSelectedSubcategoryId(null);
-                    }}
-                    className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
-                    required
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <select
+                        name="category_id"
+                        value={selectedCategoryId || ""}
+                        onChange={(e) => {
+                          setSelectedCategoryId(parseInt(e.target.value));
+                          setSelectedSubcategoryId(null);
+                        }}
+                        className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                        required
+                      >
+                        <option value="">Selecciona una categoría</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewCategoryForm(!showNewCategoryForm)}
+                        className="p-2 text-rosa-oscuro hover:text-rosa-claro transition-colors"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                    {showNewCategoryForm && (
+                      <div className="flex items-center space-x-2 mt-2">
+                        <input
+                          type="text"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          placeholder="Nombre de la nueva categoría principal"
+                          className="w-full px-4 py-2 rounded-md border border-rosa-oscuro focus:outline-none focus:ring-2 focus:ring-rosa-oscuro focus:border-transparent"
+                        />
+                        <button
+                          type="button"
+                          onClick={createNewCategory}
+                          className="px-4 py-2 bg-rosa-oscuro text-blanco rounded-md hover:bg-rosa-claro hover:text-negro transition-colors"
+                          disabled={isLoading}
+                        >
+                          Crear
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>

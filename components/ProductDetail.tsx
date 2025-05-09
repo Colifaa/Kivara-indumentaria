@@ -148,7 +148,7 @@ export function ProductDetail({
                 </AnimatePresence>
                 {/* Flechas para navegar imágenes */}
                 {images.length > 1 && (
-                  <div className="absolute inset-0 flex items-center justify-between p-4 z-10">
+                  <div className="absolute inset-0 hidden md:flex items-center justify-between p-4 z-10">
                     <button
                       onClick={prevImage}
                       className="bg-blanco/80 hover:bg-rosa-claro p-2 rounded-full shadow-lg transition-colors"
