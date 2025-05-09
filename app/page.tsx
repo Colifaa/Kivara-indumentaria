@@ -32,30 +32,10 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("inicio");
   const [searchQuery, setSearchQuery] = useState("");
   const [cartItemCount, setCartItemCount] = useState(0);
-  const [filters, setFilters] = useState<Record<string, FilterState>>({
-    dama: { category: null, subcategory: null, subSubcategory: null },
-    hombre: { category: null, subcategory: null, subSubcategory: null },
-    ninos: { category: null, subcategory: null, subSubcategory: null },
-    accesorios: { category: null, subcategory: null, subSubcategory: null }
-  });
-  const [tempFilters, setTempFilters] = useState<Record<string, FilterState>>({
-    dama: { category: null, subcategory: null, subSubcategory: null },
-    hombre: { category: null, subcategory: null, subSubcategory: null },
-    ninos: { category: null, subcategory: null, subSubcategory: null },
-    accesorios: { category: null, subcategory: null, subSubcategory: null }
-  });
-  const [showFilterPanel, setShowFilterPanel] = useState<Record<string, boolean>>({
-    dama: false,
-    hombre: false,
-    ninos: false,
-    accesorios: false
-  });
-  const [currentPage, setCurrentPage] = useState<Record<string, number>>({
-    dama: 1,
-    hombre: 1,
-    ninos: 1,
-    accesorios: 1
-  });
+  const [filters, setFilters] = useState<Record<string, FilterState>>({});
+  const [tempFilters, setTempFilters] = useState<Record<string, FilterState>>({});
+  const [showFilterPanel, setShowFilterPanel] = useState<Record<string, boolean>>({});
+  const [currentPage, setCurrentPage] = useState<Record<string, number>>({});
   const productsPerPage = 8;
   const [userId, setUserId] = useState<string | undefined>();
   const supabase = createClientComponentClient();
@@ -63,6 +43,7 @@ export default function Home() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailProductIndex, setDetailProductIndex] = useState<number | null>(null);
   const [detailProductList, setDetailProductList] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const carouselImages = [
     {
@@ -91,6 +72,34 @@ export default function Home() {
     }
   ];
 
+  // Mapeo de imágenes por defecto para las categorías originales
+  const defaultCategoryImages: Record<string, string> = {
+    dama: "/categories/Hombre.jpeg",
+    hombre: "/categories/Dama.jpeg",
+    ninos: "/categories/Niños.jpeg",
+    accesorios: "/categories/Accesorios.jpg"
+  };
+
+  // Función para obtener la imagen de colección para una categoría
+  const getCategoryCollectionImage = (category: Category) => {
+    // Si es una de las originales, usa la imagen por defecto
+    if (defaultCategoryImages[category.slug]) return defaultCategoryImages[category.slug];
+    // Si tiene image_url, úsala
+    if (category.image_url) return category.image_url;
+    // Si hay productos en esa categoría, usa la primera imagen del primer producto
+    const prod = products.find(p => {
+      if (p.category?.slug) return p.category.slug === category.slug;
+      if (p.category_id) return p.category_id === category.id;
+      return p.category?.name === category.name;
+    });
+    if (prod && prod.image_url) {
+      if (Array.isArray(prod.image_url)) return prod.image_url[0];
+      return prod.image_url;
+    }
+    // Si no, imagen por defecto
+    return "/categories/default.jpg";
+  };
+
   useEffect(() => {
     loadProducts();
     checkUser();
@@ -101,19 +110,67 @@ export default function Home() {
     filterProducts();
   }, [products, searchQuery, filters, activeSection]);
 
-  // Asegurarnos de que los filtros estén inicializados para todas las secciones
+  // Inicializar filtros dinámicamente según las categorías
   useEffect(() => {
-    const sections = ["dama", "hombre", "ninos", "accesorios"];
-    setFilters(prev => {
+    if (!categories.length) return;
+    setFilters((prev) => {
       const newFilters = { ...prev };
-      sections.forEach(section => {
-        if (!newFilters[section]) {
-          newFilters[section] = { category: null, subcategory: null, subSubcategory: null };
+      categories.forEach((cat) => {
+        if (!newFilters[cat.slug]) {
+          newFilters[cat.slug] = { category: cat.name, subcategory: null, subSubcategory: null };
+        }
+      });
+      // Eliminar filtros de categorías que ya no existen
+      Object.keys(newFilters).forEach((key) => {
+        if (!categories.find((cat) => cat.slug === key)) {
+          delete newFilters[key];
         }
       });
       return newFilters;
     });
-  }, []);
+    setTempFilters((prev) => {
+      const newTemp = { ...prev };
+      categories.forEach((cat) => {
+        if (!newTemp[cat.slug]) {
+          newTemp[cat.slug] = { category: cat.name, subcategory: null, subSubcategory: null };
+        }
+      });
+      Object.keys(newTemp).forEach((key) => {
+        if (!categories.find((cat) => cat.slug === key)) {
+          delete newTemp[key];
+        }
+      });
+      return newTemp;
+    });
+    setShowFilterPanel((prev) => {
+      const newShow = { ...prev };
+      categories.forEach((cat) => {
+        if (!(cat.slug in newShow)) {
+          newShow[cat.slug] = false;
+        }
+      });
+      Object.keys(newShow).forEach((key) => {
+        if (!categories.find((cat) => cat.slug === key)) {
+          delete newShow[key];
+        }
+      });
+      return newShow;
+    });
+    setCurrentPage((prev) => {
+      const newPage = { ...prev };
+      categories.forEach((cat) => {
+        if (!(cat.slug in newPage)) {
+          newPage[cat.slug] = 1;
+        }
+      });
+      Object.keys(newPage).forEach((key) => {
+        if (!categories.find((cat) => cat.slug === key)) {
+          delete newPage[key];
+        }
+      });
+      return newPage;
+    });
+  }, [categories]);
 
   // Agregar manejador de eventos para la tecla Escape
   useEffect(() => {
@@ -143,7 +200,7 @@ export default function Home() {
   const loadProducts = async () => {
     try {
       // Primero cargar todas las categorías
-      const { data: categories, error: categoriesError } = await supabase
+      const { data: categoriesData, error: categoriesError } = await supabase
         .from("categories")
         .select("*");
 
@@ -221,39 +278,31 @@ export default function Home() {
 
   const getFilteredProductsForSection = (section: string) => {
     let sectionProducts = [...products];
-  
-
-    // Mapear secciones a nombres de categorías
-    const sectionToCategory: Record<string, string> = {
-      "dama": "Damas",
-      "hombre": "Hombres",
-      "ninos": "Niños",
-      "accesorios": "Accesorios"
-    };
-
+    // Buscar la categoría correspondiente por slug
+    const categoryObj = categories.find(cat => cat.slug === section);
+    if (!categoryObj) return [];
     // Filtrar por sección (categoría principal)
     sectionProducts = sectionProducts.filter(product => {
-      return product.category?.name === sectionToCategory[section];
+      // Preferimos comparar por slug si existe, si no por id, si no por nombre
+      if (product.category?.slug) return product.category.slug === section;
+      if (product.category_id) return product.category_id === categoryObj.id;
+      return product.category?.name === categoryObj.name;
     });
-
     // Aplicar filtros adicionales si existen
     const sectionFilters = filters[section];
-    
     if (sectionFilters) {
-      // Filtro por categoría
+      // Filtro por categoría (nombre)
       if (sectionFilters.category) {
         sectionProducts = sectionProducts.filter(product => 
           product.category?.name === sectionFilters.category
         );
       }
-      
       // Filtro por subcategoría
       if (sectionFilters.subcategory) {
         sectionProducts = sectionProducts.filter(product => 
           product.subcategory?.name === sectionFilters.subcategory
         );
       }
-      
       // Filtro por sub-subcategoría
       if (sectionFilters.subSubcategory) {
         sectionProducts = sectionProducts.filter(product => 
@@ -261,7 +310,6 @@ export default function Home() {
         );
       }
     }
-
     return sectionProducts;
   };
 
@@ -394,23 +442,16 @@ export default function Home() {
   };
 
   const getUniqueCategories = (section: string) => {
-    const sectionToCategory: Record<string, string> = {
-      "dama": "Damas",
-      "hombre": "Hombres",
-      "ninos": "Niños",
-      "accesorios": "Accesorios"
-    };
-
-    // Filtrar productos por la sección actual
-    const sectionProducts = products.filter(product => 
-      product.category?.name === sectionToCategory[section]
-    );
-
-    // Obtener categorías únicas para esta sección
+    const categoryObj = categories.find(cat => cat.slug === section);
+    if (!categoryObj) return [];
+    const sectionProducts = products.filter(product => {
+      if (product.category?.slug) return product.category.slug === section;
+      if (product.category_id) return product.category_id === categoryObj.id;
+      return product.category?.name === categoryObj.name;
+    });
     const uniqueCategories = Array.from(
       new Set(sectionProducts.map(product => product.category?.name))
     ).filter(Boolean) as string[];
-
     return uniqueCategories;
   };
 
@@ -447,44 +488,32 @@ export default function Home() {
   };
 
   const getUniqueSubcategories = (section: string, category: string) => {
-    // Obtener solo los productos que pertenecen a esta sección y categoría
+    const categoryObj = categories.find(cat => cat.slug === section);
+    if (!categoryObj) return [];
     const sectionProducts = products.filter(product => {
       const isCorrectCategory = product.category?.name === category;
-      const belongsToSection = product.category?.name === (
-        section === "dama" ? "Damas" :
-        section === "hombre" ? "Hombres" :
-        section === "ninos" ? "Niños" :
-        section === "accesorios" ? "Accesorios" : ""
-      );
-      return isCorrectCategory && belongsToSection;
+      if (product.category?.slug) return product.category.slug === section && isCorrectCategory;
+      if (product.category_id) return product.category_id === categoryObj.id && isCorrectCategory;
+      return isCorrectCategory;
     });
-
-    // Obtener subcategorías únicas
     const uniqueSubcategories = Array.from(
       new Set(sectionProducts.map(product => product.subcategory?.name))
     ).filter(Boolean) as string[];
-
     return uniqueSubcategories;
   };
 
   const getUniqueSubSubcategories = (section: string, subcategory: string) => {
-    // Obtener solo los productos que pertenecen a esta subcategoría y sección
+    const categoryObj = categories.find(cat => cat.slug === section);
+    if (!categoryObj) return [];
     const sectionProducts = products.filter(product => {
       const isCorrectSubcategory = product.subcategory?.name === subcategory;
-      const belongsToSection = product.category?.name === (
-        section === "dama" ? "Damas" :
-        section === "hombre" ? "Hombres" :
-        section === "ninos" ? "Niños" :
-        section === "accesorios" ? "Accesorios" : ""
-      );
-      return isCorrectSubcategory && belongsToSection;
+      if (product.category?.slug) return product.category.slug === section && isCorrectSubcategory;
+      if (product.category_id) return product.category_id === categoryObj.id && isCorrectSubcategory;
+      return isCorrectSubcategory;
     });
-
-    // Obtener sub-subcategorías únicas
     const uniqueSubSubcategories = Array.from(
       new Set(sectionProducts.map(product => product.sub_subcategory?.name))
     ).filter(Boolean) as string[];
-
     return uniqueSubSubcategories;
   };
 
@@ -800,6 +829,24 @@ export default function Home() {
     setDetailProductIndex(null);
     setDetailProductList([]);
   };
+
+  // Cargar categorías principales dinámicamente
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("categories")
+          .select("*")
+          .order("name");
+        if (error) throw error;
+        if (data) setCategories(data);
+      } catch (err) {
+        console.error("Error al cargar categorías principales:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation
@@ -811,11 +858,10 @@ export default function Home() {
         getUniqueSubcategories={getUniqueSubcategories}
         getUniqueSubSubcategories={getUniqueSubSubcategories}
         onNavbarFilter={(section, subcategory, subSubcategory) => {
-          // Aplica el filtro y navega a la sección
           setFilters(prev => ({
             ...prev,
             [section]: {
-              category: section === "dama" ? "Damas" : section === "hombre" ? "Hombres" : section === "ninos" ? "Niños" : "Accesorios",
+              category: categories.find(c => c.slug === section)?.name || section,
               subcategory: subcategory || null,
               subSubcategory: subSubcategory || null
             }
@@ -823,6 +869,7 @@ export default function Home() {
           setCurrentPage(prev => ({ ...prev, [section]: 1 }));
           scrollToSection(section);
         }}
+        categories={categories}
       />
       
       {/* Hero Section con Carrusel */}
@@ -847,32 +894,7 @@ export default function Home() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                {
-                  id: "dama",
-                  title: "Dama",
-                  image: "/categories/Hombre.jpeg",
-                  description: "Las últimas tendencias"
-                },
-                {
-                  id: "hombre",
-                  title: "Hombre",
-                  image: "/categories/Dama.jpeg",
-                  description: "Estilo contemporáneo"
-                },
-                {
-                  id: "ninos",
-                  title: "Niños",
-                  image: "/categories/Niños.jpeg",
-                  description: "Comodidad y diversión"
-                },
-                {
-                  id: "accesorios",
-                  title: "Accesorios",
-                  image: "/categories/Accesorios.jpg",
-                  description: "Complementos perfectos"
-                }
-              ].map((category) => (
+              {categories.map((category) => (
                 <motion.div
                   key={category.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -882,26 +904,26 @@ export default function Home() {
                     boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
                   }}
                   className="relative overflow-hidden rounded-2xl shadow-md cursor-pointer"
-                  onClick={() => scrollToSection(category.id)}
+                  onClick={() => scrollToSection(category.slug)}
                 >
                   <div className="relative aspect-[4/5]">
                     <Image
-                      src={category.image}
-                      alt={category.title}
+                      src={getCategoryCollectionImage(category)}
+                      alt={category.name}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-negro/90 via-negro/50 to-transparent" />
                     <div className="absolute inset-0 flex flex-col justify-end p-6">
-                      <h3 className="text-2xl font-bold text-blanco mb-1">{category.title}</h3>
-                      <p className="text-sm text-blanco/80 mb-4">{category.description}</p>
+                      <h3 className="text-2xl font-bold text-blanco mb-1">{category.name}</h3>
+                      <p className="text-sm text-blanco/80 mb-4">{category.description || "Colección especial"}</p>
                       <motion.div
-  whileHover={{ x: 5 }}
-  className="flex items-center text-rosa-claro font-medium"
->
-  <span>Explorar</span>
-  <ArrowRight className="h-4 w-4 ml-1" />
-</motion.div>
+                        whileHover={{ x: 5 }}
+                        className="flex items-center text-rosa-claro font-medium"
+                      >
+                        <span>Explorar</span>
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </motion.div>
                     </div>
                   </div>
                 </motion.div>
@@ -910,7 +932,8 @@ export default function Home() {
           </div>
   
           {/* Secciones de productos */}
-          {["dama", "hombre", "ninos", "accesorios"].map((section) => {
+          {categories.map((category) => {
+            const section = category.slug;
             const { products: paginatedProducts, totalPages } = getPaginatedProducts(section);
             
             return (
@@ -920,13 +943,8 @@ export default function Home() {
     {/* Imagen de fondo según la categoría */}
     <div className="absolute inset-0">
       <Image
-        src={
-          section === "dama" ? "/categories/Hombre.jpeg" :
-          section === "hombre" ? "/categories/Dama.jpeg" : 
-          section === "ninos" ? "/categories/Niños.jpeg" :
-          "/categories/Accesorios.jpg"
-        }
-        alt={`Categoría ${section}`}
+        src={getCategoryCollectionImage(category)}
+        alt={category.name}
         fill
         className="object-cover"
       />
@@ -941,13 +959,10 @@ export default function Home() {
           COLECCIÓN
         </span>
         <h2 className="text-3xl md:text-4xl font-bold capitalize text-blanco mb-1">
-          {section}
+          {category.name}
         </h2>
         <p className="text-blanco/80 text-sm md:text-base">
-          {section === "dama" && "Descubre nuestras últimas tendencias en moda femenina"}
-          {section === "hombre" && "Estilo y confort para el hombre contemporáneo"}
-          {section === "ninos" && "Ropa divertida y cómoda para los más pequeños"}
-          {section === "accesorios" && "Complementos perfectos para elevar tu look"}
+          {category.description || "Descubre nuestra colección"}
         </p>
       </div>
       
@@ -966,7 +981,7 @@ export default function Home() {
   </div>
   
   {/* Filtros activos (movidos fuera del banner para mejor organización) */}
-  {(filters[section].subcategory || filters[section].subSubcategory) && (
+  {filters[section] && (filters[section].subcategory || filters[section].subSubcategory) && (
     <div className="mt-4 flex flex-wrap gap-2">
       {filters[section].subcategory && (
         <span className="px-4 py-1 bg-rosa-claro/10 text-rosa-oscuro rounded-full text-sm flex items-center">

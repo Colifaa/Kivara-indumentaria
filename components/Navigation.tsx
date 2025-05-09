@@ -18,6 +18,7 @@ interface NavigationProps {
   getUniqueSubcategories: (section: string, category: string) => string[];
   getUniqueSubSubcategories: (section: string, subcategory: string) => string[];
   onNavbarFilter: (section: string, subcategory?: string, subSubcategory?: string) => void;
+  categories: { id: number; name: string; slug: string }[];
 }
 
 export function Navigation({
@@ -28,7 +29,8 @@ export function Navigation({
   cartItemCount,
   getUniqueSubcategories,
   getUniqueSubSubcategories,
-  onNavbarFilter
+  onNavbarFilter,
+  categories = []
 }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -103,12 +105,7 @@ export function Navigation({
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const navItems = [
-    { name: "Dama", value: "dama", category: "Damas" },
-    { name: "Hombre", value: "hombre", category: "Hombres" },
-    { name: "Niños", value: "ninos", category: "Niños" },
-    { name: "Accesorios", value: "accesorios", category: "Accesorios" }
-  ];
+  const navItems = categories.map((cat) => ({ name: cat.name, value: cat.slug, category: cat.name }));
 
   return (
     <nav 
