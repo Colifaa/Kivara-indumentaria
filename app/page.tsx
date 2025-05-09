@@ -54,22 +54,52 @@ export default function Home() {
       buttonText: "Comprar Ahora",
       buttonLink: "#dama"
     },
+
     {
-      url: "/carousel/sexy laly 2084.jpeg",
+      url: "/carousel/aa.jpeg",
       alt: "Ofertas especiales",
       title: "Ofertas Especiales",
       subtitle: "Hasta 50% de descuento en selección de prendas",
       buttonText: "Comprar Ahora",
       buttonLink: "#dama"
     },
+
     {
-      url: "/carousel/Hombre.jpeg",
+      url: "/carousel/b.jpeg",
       alt: "Tendencias de temporada",
       title: "Tendencias de Temporada",
       subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
       buttonText: "Comprar Ahora",
       buttonLink: "#hombre"
-    }
+    },
+
+    {
+      url: "/carousel/c.jpeg",
+      alt: "Tendencias de temporada",
+      title: "Tendencias de Temporada",
+      subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
+      buttonText: "Comprar Ahora",
+      buttonLink: "#hombre"
+    },
+
+    {
+      url: "/carousel/d.jpeg",
+      alt: "Tendencias de temporada",
+      title: "Tendencias de Temporada",
+      subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
+      buttonText: "Comprar Ahora",
+      buttonLink: "#hombre"
+    },
+
+    {
+      url: "/carousel/e.jpeg",
+      alt: "Tendencias de temporada",
+      title: "Tendencias de Temporada",
+      subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
+      buttonText: "Comprar Ahora",
+      buttonLink: "#hombre"
+    },
+   
   ];
 
   const defaultCategoryImages: Record<string, string> = {
