@@ -55,7 +55,7 @@ export default function Home() {
       buttonLink: "#dama"
     },
     {
-      url: "/carousel/Belen.png",
+      url: "/carousel/sexy laly 2084.jpeg",
       alt: "Ofertas especiales",
       title: "Ofertas Especiales",
       subtitle: "Hasta 50% de descuento en selección de prendas",
@@ -67,38 +67,45 @@ export default function Home() {
       alt: "Tendencias de temporada",
       title: "Tendencias de Temporada",
       subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
-       buttonText: "Comprar Ahora",
+      buttonText: "Comprar Ahora",
       buttonLink: "#hombre"
     }
   ];
 
-  // Mapeo de imágenes por defecto para las categorías originales
   const defaultCategoryImages: Record<string, string> = {
-    dama: "/categories/Hombre.jpeg",
-    hombre: "/categories/Dama.jpeg",
-    ninos: "/categories/Niños.jpeg",
-    accesorios: "/categories/Accesorios.jpg"
+    damas: "/categories/Hombre.jpeg",
+    hombres: "/categories/Dama.jpeg",
+    accesorios: "/categories/Accesorios.jpg",
+    ninos: "/categories/Niños.jpeg"
   };
 
-  // Función para obtener la imagen de colección para una categoría
-  const getCategoryCollectionImage = (category: Category) => {
-    // Si es una de las originales, usa la imagen por defecto
-    if (defaultCategoryImages[category.slug]) return defaultCategoryImages[category.slug];
-    // Si tiene image_url, úsala
-    if (category.image_url) return category.image_url;
-    // Si hay productos en esa categoría, usa la primera imagen del primer producto
+  function getCategoryCollectionImage(category: Category) {
+    console.log('Categoría actual:', category);
+    console.log('Slug de la categoría:', category.slug);
+    console.log('Imágenes predefinidas:', defaultCategoryImages);
+    
+    // Primero verificar si es una de las categorías con imágenes predefinidas
+    if (defaultCategoryImages[category.slug]) {
+      console.log('Usando imagen predefinida:', defaultCategoryImages[category.slug]);
+      return defaultCategoryImages[category.slug];
+    }
+
+    // Si no es una categoría predefinida, buscar en los productos
     const prod = products.find(p => {
       if (p.category?.slug) return p.category.slug === category.slug;
       if (p.category_id) return p.category_id === category.id;
       return p.category?.name === category.name;
     });
+
     if (prod && prod.image_url) {
+      console.log('Usando imagen del producto:', prod.image_url);
       if (Array.isArray(prod.image_url)) return prod.image_url[0];
       return prod.image_url;
     }
-    // Si no, imagen por defecto
+
+    console.log('Usando imagen por defecto');
     return "/categories/default.jpg";
-  };
+  }
 
   useEffect(() => {
     loadProducts();

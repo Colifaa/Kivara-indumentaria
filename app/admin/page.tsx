@@ -96,6 +96,10 @@ export default function AdminPage() {
         onSearch={handleSearch}
         onCartClick={handleCartClick}
         cartItemCount={cartItemCount}
+        getUniqueSubcategories={() => []}
+        getUniqueSubSubcategories={() => []}
+        onNavbarFilter={() => {}}
+        categories={[]}
       />
       <div className=" relative pt-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto py-6">
