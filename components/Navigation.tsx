@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, ChevronDown, LogOut, LayoutDashboard } from "lucide-react";
@@ -15,6 +15,9 @@ interface NavigationProps {
   onSearch: (query: string) => void;
   onCartClick: () => void;
   cartItemCount: number;
+  getUniqueSubcategories: (section: string, category: string) => string[];
+  getUniqueSubSubcategories: (section: string, subcategory: string) => string[];
+  onNavbarFilter: (section: string, subcategory?: string, subSubcategory?: string) => void;
 }
 
 export function Navigation({
@@ -22,7 +25,10 @@ export function Navigation({
   activeSection,
   onSearch,
   onCartClick,
-  cartItemCount
+  cartItemCount,
+  getUniqueSubcategories,
+  getUniqueSubSubcategories,
+  onNavbarFilter
 }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -33,6 +39,9 @@ export function Navigation({
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const supabase = createClientComponentClient();
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [hoveredSubcategory, setHoveredSubcategory] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkUser();
@@ -47,6 +56,19 @@ export function Navigation({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [scrolled]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpenDropdown(null);
+        setHoveredSubcategory(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -82,10 +104,10 @@ export function Navigation({
   };
 
   const navItems = [
-    { name: "Dama", value: "dama" },
-    { name: "Hombre", value: "hombre" },
-    { name: "Niños", value: "ninos" },
-    { name: "Accesorios", value: "accesorios" }
+    { name: "Dama", value: "dama", category: "Damas" },
+    { name: "Hombre", value: "hombre", category: "Hombres" },
+    { name: "Niños", value: "ninos", category: "Niños" },
+    { name: "Accesorios", value: "accesorios", category: "Accesorios" }
   ];
 
   return (
@@ -120,26 +142,75 @@ export function Navigation({
           {/* Enlaces de navegación - Desktop */}
           <div className="hidden md:flex space-x-4 lg:space-x-8">
             {navItems.map((item) => (
-              <button
-                key={item.value}
-                onClick={() => onSectionChange(item.value)}
-                className={`text-sm font-medium relative px-1 py-1 transition-colors duration-300 ease-in-out
-                  ${activeSection === item.value
-                    ? "text-[#9E4244]"
-                    : "text-[#4A3034] hover:text-[#9E4244]"}
-                `}
-              >
-                {item.name}
-                {activeSection === item.value && (
-                  <motion.div 
-                    layoutId="activeNavIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9E4244]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
+              <div key={item.value} className="relative" ref={openDropdown === item.value ? dropdownRef : undefined}>
+                <button
+                  onClick={() => setOpenDropdown(openDropdown === item.value ? null : item.value)}
+                  className={`text-sm font-medium relative px-1 py-1 transition-colors duration-300 ease-in-out
+                    ${activeSection === item.value
+                      ? "text-[#9E4244]"
+                      : "text-[#4A3034] hover:text-[#9E4244]"}
+                  `}
+                >
+                  {item.name}
+                  {activeSection === item.value && (
+                    <motion.div 
+                      layoutId="activeNavIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9E4244]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  )}
+                </button>
+                {/* Dropdown */}
+                {openDropdown === item.value && (
+                  <div className="absolute left-0 top-full mt-2 flex z-50"
+                    style={{ minWidth: '224px' }}
+                  >
+                    <div className="w-56 bg-white rounded-lg shadow-lg border border-[#FBD1D8]">
+                      {/* Subcategorías */}
+                      {getUniqueSubcategories(item.value, item.category).map((subcategory) => (
+                        <div
+                          key={subcategory}
+                          className="relative"
+                          onMouseEnter={() => setHoveredSubcategory(subcategory)}
+                          onMouseLeave={() => setHoveredSubcategory(null)}
+                        >
+                          <button
+                            className="w-full text-left px-4 py-2 hover:bg-[#FBD1D8]/30 text-[#4A3034] font-medium"
+                            onClick={() => {
+                              onNavbarFilter(item.value, subcategory);
+                              setOpenDropdown(null);
+                            }}
+                          >
+                            {subcategory}
+                            {getUniqueSubSubcategories(item.value, subcategory).length > 0 && (
+                              <span className="float-right">▶</span>
+                            )}
+                          </button>
+                          {/* Sub-subcategorías */}
+                          {hoveredSubcategory === subcategory && getUniqueSubSubcategories(item.value, subcategory).length > 0 && (
+                            <div className="absolute left-full top-0 ml-1 w-56 bg-white rounded-lg shadow-lg z-50 border border-[#FBD1D8]">
+                              {getUniqueSubSubcategories(item.value, subcategory).map((subSubcategory) => (
+                                <button
+                                  key={subSubcategory}
+                                  className="w-full text-left px-4 py-2 hover:bg-[#E294A2]/20 text-[#4A3034]"
+                                  onClick={() => {
+                                    onNavbarFilter(item.value, subcategory, subSubcategory);
+                                    setOpenDropdown(null);
+                                  }}
+                                >
+                                  {subSubcategory}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </button>
+              </div>
             ))}
           </div>
 

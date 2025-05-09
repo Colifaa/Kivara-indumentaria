@@ -808,6 +808,21 @@ export default function Home() {
         onSearch={handleSearch}
         onCartClick={handleCartClick}
         cartItemCount={cartItemCount}
+        getUniqueSubcategories={getUniqueSubcategories}
+        getUniqueSubSubcategories={getUniqueSubSubcategories}
+        onNavbarFilter={(section, subcategory, subSubcategory) => {
+          // Aplica el filtro y navega a la sección
+          setFilters(prev => ({
+            ...prev,
+            [section]: {
+              category: section === "dama" ? "Damas" : section === "hombre" ? "Hombres" : section === "ninos" ? "Niños" : "Accesorios",
+              subcategory: subcategory || null,
+              subSubcategory: subSubcategory || null
+            }
+          }));
+          setCurrentPage(prev => ({ ...prev, [section]: 1 }));
+          scrollToSection(section);
+        }}
       />
       
       {/* Hero Section con Carrusel */}
