@@ -82,15 +82,7 @@ export default function Home() {
       buttonLink: "#hombre"
     },
 
-    {
-      url: "/carousel/d.jpeg",
-      alt: "Tendencias de temporada",
-      title: "Tendencias de Temporada",
-      subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
-      buttonText: "Comprar Ahora",
-      buttonLink: "#hombre"
-    },
-
+   
     {
       url: "/carousel/e.jpeg",
       alt: "Tendencias de temporada",
