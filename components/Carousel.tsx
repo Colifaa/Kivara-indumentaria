@@ -19,9 +19,10 @@ interface CarouselImage {
 interface CarouselProps {
   images: CarouselImage[];
   autoPlayInterval?: number;
+  onSectionChange?: (section: string) => void;
 }
 
-export function Carousel({ images, autoPlayInterval = 5000 }: CarouselProps) {
+export function Carousel({ images, autoPlayInterval = 5000, onSectionChange }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const router = useRouter();
@@ -109,7 +110,11 @@ export function Carousel({ images, autoPlayInterval = 5000 }: CarouselProps) {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => router.push(images[currentIndex].buttonLink)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log('Botón del carrusel clickeado, sección:', images[currentIndex].buttonLink);
+                  onSectionChange?.(images[currentIndex].buttonLink);
+                }}
                 className="group flex items-center bg-blanco text-negro px-8 py-3 rounded-full font-medium hover:bg-rosa-oscuro hover:text-blanco transition-colors duration-300"
               >
                 <span>{images[currentIndex].buttonText}</span>

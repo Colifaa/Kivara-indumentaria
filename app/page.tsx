@@ -45,54 +45,48 @@ export default function Home() {
   const [detailProductList, setDetailProductList] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  const carouselImages = [
-    {
-      url: "/Logo Kivara.jpeg",
-      alt: "Nuevas colecciones de moda",
-      title: "Nueva Colección Primavera 2025",
-      subtitle: "Descubre las últimas tendencias en moda con nuestra nueva colección exclusiva",
-      buttonText: "Comprar Ahora",
-      buttonLink: "#dama"
-    },
-
-    {
-      url: "/carousel/aa.jpeg",
-      alt: "Ofertas especiales",
-      title: "Ofertas Especiales",
-      subtitle: "Hasta 50% de descuento en selección de prendas",
-      buttonText: "Comprar Ahora",
-      buttonLink: "#dama"
-    },
-
-    {
-      url: "/carousel/b.jpeg",
-      alt: "Tendencias de temporada",
-      title: "Tendencias de Temporada",
-      subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
-      buttonText: "Comprar Ahora",
-      buttonLink: "#hombre"
-    },
-
-    {
-      url: "/carousel/c.jpeg",
-      alt: "Tendencias de temporada",
-      title: "Tendencias de Temporada",
-      subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
-      buttonText: "Comprar Ahora",
-      buttonLink: "#hombre"
-    },
-
-   
-    {
-      url: "/carousel/e.jpeg",
-      alt: "Tendencias de temporada",
-      title: "Tendencias de Temporada",
-      subtitle: "Encuentra tu estilo único con nuestras últimas novedades",
-      buttonText: "Comprar Ahora",
-      buttonLink: "#hombre"
-    },
-   
-  ];
+const carouselImages = [
+  {
+    url: "/Logo Kivara.jpeg",
+    alt: "Nuevas colecciones de moda",
+    title: "Nueva Colección Primavera 2025",
+    subtitle: "Descubre las últimas tendencias en moda con nuestra nueva colección exclusiva",
+    buttonText: "Comprar Ahora",
+    buttonLink: "damas"
+  },
+  {
+    url: "/carousel/aa.jpeg",
+    alt: "Estilo urbano chic",
+    title: "Elegancia Urbana",
+    subtitle: "Combinación perfecta de sofisticación y estilo para tu día a día",
+    buttonText: "Comprar Ahora",
+    buttonLink: "damas"
+  },
+  {
+    url: "/carousel/b.jpeg",
+    alt: "Elegancia minimalista",
+    title: "Estilo Moderno y Minimalista",
+    subtitle: "Un equilibrio perfecto entre comodidad y sofisticación para cualquier ocasión",
+    buttonText: "Comprar Ahora",
+    buttonLink: "damas"
+  },
+  {
+    url: "/carousel/c.jpeg",
+    alt: "Estilo deportivo urbano",
+    title: "Energía Deportiva y Urbana",
+    subtitle: "Un clásico renovado con detalles modernos para un look atrevido y versátil",
+    buttonText: "Comprar Ahora",
+    buttonLink: "hombres"
+  },
+  {
+    url: "/carousel/e.jpeg",
+    alt: "Medias coloridas con corazones",
+    title: "Amor a cada Paso",
+    subtitle: "Medias vibrantes y cómodas para expresar tu lado romántico y divertido",
+    buttonText: "Comprar Ahora",
+    buttonLink: "damas"
+  }
+];
 
   const defaultCategoryImages: Record<string, string> = {
     damas: "/categories/Hombre.jpeg",
@@ -460,16 +454,26 @@ export default function Home() {
     });
   };
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      const yOffset = -80;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-      setActiveSection(sectionId);
-    }
-  };
-
+const scrollToSection = (sectionId: string) => {
+  console.log('Intentando hacer scroll a la sección:', sectionId);
+  console.log('Categorías disponibles:', categories.map(c => ({ name: c.name, slug: c.slug })));
+  const element = document.getElementById(sectionId);
+  if (element) {
+    const yOffset = -80; // Ajuste para la altura del navbar
+    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    
+    window.scrollTo({
+      top: y,
+      behavior: 'smooth'
+    });
+    
+    setActiveSection(sectionId);
+    console.log('Scroll completado a la sección:', sectionId);
+  } else {
+    console.log('Sección no encontrada:', sectionId);
+    console.log('Elementos con ID en la página:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+  }
+};
   const getUniqueCategories = (section: string) => {
     const categoryObj = categories.find(cat => cat.slug === section);
     if (!categoryObj) return [];
@@ -485,22 +489,16 @@ export default function Home() {
   };
 
   const getSubcategoriesForSection = (section: string) => {
-    const sectionToCategory: Record<string, string> = {
-      "dama": "Damas",
-      "hombre": "Hombres",
-      "ninos": "Niños",
-      "accesorios": "Accesorios"
-    };
-
-    const categoryName = sectionToCategory[section];
+    // Buscar la categoría correspondiente por slug
+    const categoryObj = categories.find(cat => cat.slug === section);
+    if (!categoryObj) return [];
     
     // Encontrar la categoría correcta
     const categoryProducts = products.filter(product => 
-      product.category?.name === categoryName
+      product.category?.slug === section
     );
     
     if (categoryProducts.length === 0) {
-    
       return [];
     }
 
@@ -906,7 +904,8 @@ export default function Home() {
         <div className="relative mb-12 ">
           <Carousel 
             images={carouselImages} 
-            autoPlayInterval={5000} 
+            autoPlayInterval={5000}
+            onSectionChange={scrollToSection}
           />
          
         </div>
