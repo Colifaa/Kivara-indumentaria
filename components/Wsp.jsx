@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 function Wsp() {
   return (
     <motion.a
-      href="https://wa.me/+5493874862962"
+      href="https://wa.me/+549387539-8929"
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-[10px] right-[40px] w-[60px] h-[60px] rounded-full bg-green-500 shadow-lg flex justify-center items-center z-10 hover:bg-green-600 transition-colors duration-300"

@@ -50,7 +50,7 @@ export function CheckoutForm({ onClose, total, cartItems }: CheckoutFormProps) {
     );
 
     // Abrir WhatsApp con el mensaje formateado
-    const whatsappUrl = `https://wa.me/+5493874862962?text=${message}`;
+    const whatsappUrl = `https://wa.me/+549387539-8929?text=${message}`;
     window.open(whatsappUrl, '_blank');
     
     onClose();

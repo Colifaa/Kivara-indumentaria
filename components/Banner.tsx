@@ -10,13 +10,7 @@ function Banner() {
         <p className="text-blanco/80 mb-6">
           Hasta 30% de descuento en productos seleccionados por tiempo limitado
         </p>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-blanco text-rosa-oscuro px-8 py-3 rounded-full font-medium shadow-lg hover:bg-blanco/90 transition-colors"
-        >
-          Ver ofertas
-        </motion.button>
+     
       </div>
     </div>
     <div className="absolute -right-16 -bottom-16 h-64 w-64 md:h-80 md:w-80 bg-blanco/10 rounded-full"></div>
