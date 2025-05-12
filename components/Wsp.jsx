@@ -3,11 +3,19 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 function Wsp() {
+  const handleWhatsAppClick = (e) => {
+    e.preventDefault();
+    const phoneNumber = '5493875398929'; // Número sin guiones ni caracteres especiales
+    const message = 'Hola! Me gustaría obtener más información sobre sus productos.';
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <motion.a
-      href="https://wa.me/+549387539-8929"
-      target="_blank"
-      rel="noopener noreferrer"
+      onClick={handleWhatsAppClick}
+      href="#"
       className="fixed bottom-[10px] right-[40px] w-[60px] h-[60px] rounded-full bg-green-500 shadow-lg flex justify-center items-center z-10 hover:bg-green-600 transition-colors duration-300"
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
