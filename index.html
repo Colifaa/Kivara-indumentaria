@@ -1,0 +1,20 @@
+function scrollToSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function openWhatsApp() {
+    const phoneNumber = '5491122334455'; // Tu número de WhatsApp
+    const message = 'Hola! Me gustaría obtener más información sobre sus productos.';
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    
+    // Intentar abrir WhatsApp Web primero
+    window.open(whatsappUrl, '_blank');
+    
+    // Si el usuario está en móvil, también intentar abrir la app nativa
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        window.location.href = whatsappUrl;
+    }
+} 

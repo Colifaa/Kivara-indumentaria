@@ -50,8 +50,16 @@ export function CheckoutForm({ onClose, total, cartItems }: CheckoutFormProps) {
     );
 
     // Abrir WhatsApp con el mensaje formateado
-    const whatsappUrl = `https://wa.me/+549387539-8929?text=${message}`;
-    window.open(whatsappUrl, '_blank');
+    const phoneNumber = '5493875398929'; // Número sin guiones ni caracteres especiales
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    
+    // Intentar abrir WhatsApp Web primero
+    const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    
+    // Si el usuario está en móvil, también intentar abrir la app nativa
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      window.location.href = whatsappUrl;
+    }
     
     onClose();
   };
